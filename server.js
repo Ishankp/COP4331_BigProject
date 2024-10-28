@@ -138,7 +138,7 @@ app.use((req, res, next) =>
 	next();
 });
 
-
+//	AddCard API
 app.post('/api/addcard', async (req, res, next) =>
 {
 // incoming: userId, color
@@ -160,7 +160,7 @@ var ret = { error: error };
 res.status(200).json(ret);
 });
 
-
+//	Login API
 app.post('/api/login', async (req, res, next) =>
 {
 // incoming: login, password
@@ -183,6 +183,7 @@ var ret = { id:id, firstName:fn, lastName:ln, error:''};
 res.status(200).json(ret);
 });
 
+//	SearchCards API
 app.post('/api/searchcards', async (req, res, next) => {
   // incoming: userId, search
   // outgoing: results[], error
@@ -201,6 +202,73 @@ app.post('/api/searchcards', async (req, res, next) => {
   }
 });
 
+//	Register API
+const { ObjectId } = require('mongodb');  // Ensure ObjectId is imported
+
+
+app.post('/api/register', async (req, res) => {
+	const { FirstName, LastName, Login, Password, email, ShareKey } = req.body;
+	let error = '';
+	let success = false;
+  
+	try {
+	  const db = client.db('SchedulePlanner');
+  
+	  // Check if the user already exists by email
+	  const existingUser = await db.collection('Users').findOne({ email });
+	  if (existingUser) {
+		return res.status(400).json({ success, error: 'User already exists' });
+	  }
+  
+	  // Get the next incremental UserID
+	  const latestUser = await db.collection('Users').find().sort({ UserID: -1 }).limit(1).toArray();
+	  const UserID = latestUser.length > 0 ? latestUser[0].UserID + 1 : 1;
+  
+	  // Create a new user
+	  const newUser = {
+		_id: new ObjectId(),
+		FirstName,
+		LastName,
+		Login,
+		Password,
+		email,
+		UserID,
+		ShareKey: ShareKey || null,
+		contact_list: []
+	  };
+  
+	  const result = await db.collection('Users').insertOne(newUser);
+  
+	  // Initialize an empty schedule for the new user in the "Planners" collection
+	  if (result.insertedId) {
+		await db.collection('Planner').insertOne({
+		  UserID,
+		  schedule: []  // Empty schedule array
+		});
+		success = true;
+	  } else {
+		error = 'Failed to register user';
+	  }
+	} catch (err) {
+	  console.error('Error during registration:', err);
+	  error = 'Server error: ' + err.message;
+	}
+  
+	res.status(success ? 200 : 500).json({ success, error });
+});
+
+//	Add to Schedule API
+
+//	View Schedule API
+
+//	Delete to Schedule API
+
+//	Add Friend API
+
+//	Delete Friend API
+
+
+
+
 
 app.listen(5000); // start Node + Express server on port 5000
-
