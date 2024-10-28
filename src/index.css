@@ -1,17 +1,27 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 :root {
+  --primary-color: #FF6B6B; /* Sunset Orange */
+  --secondary-color: #FFD6A5; /* Soft Peach */
+  --accent-color: #4ECDC4; /* Sky Blue */
+  --dark-bg-color: #333533; /* Deep Charcoal */
+  --light-bg-color: #FFFDF9; /* Ivory White */
+
+  /* Use these for text to ensure readability */
+  --dark-text-color: #242424; /* Very dark gray for text on light backgrounds */
+  --light-text-color: rgba(255, 255, 255, 0.87); /* Light gray text for dark mode */
+
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
 
 a {
   font-weight: 500;
@@ -22,13 +32,17 @@ a:hover {
   color: #535bf2;
 }
 
-body {
+
+html, body {
   margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  overflow-x: hidden;
+  background-color: var(--secondary-color);
 }
+
+
 
 h1 {
   font-size: 3.2em;
@@ -42,19 +56,21 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: var(--primary-color);
+  color: white;
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: background-color 0.25s, border-color 0.25s;
 }
 button:hover {
-  border-color: #646cff;
+  background-color: var(--accent-color);
 }
+
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
-@media (prefers-color-scheme: light) {
+/* @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
     background-color: #ffffff;
@@ -65,4 +81,138 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+} */
+@media (prefers-color-scheme: light) {
+  :root {
+    background-color: var(--light-bg-color);
+    color: var(--dark-text-color);
+  }
 }
+
+/* Navbar styles */
+.navbar {
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: white;
+  color: var(--primary-color);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.site-title {
+  font-size: 1.5em;
+  font-weight: bold;
+  margin: 0;
+}
+/* Auth buttons in the navbar */
+.auth-buttons {
+  display: flex;
+  gap: 10px;
+}
+.login-button, .signup-button {
+  padding: 8px 16px;
+  font-size: 1em;
+  border: none;
+  border-radius: 5px;
+  color: white;
+  background-color: var(--primary-color);
+  cursor: pointer;
+  transition: background-color 0.25s;
+}
+.login-button:hover, .signup-button:hover {
+  background-color: var(--secondary-color);
+}
+
+/* Welcome content below the navbar */
+.welcome-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding-top: 10%; 
+  width: 100%;
+}
+
+.welcome-content h1 {
+  font-size: 2.5em;
+  margin-bottom: 0.5em;
+  color: var(--primary-color);
+}
+.welcome-content p {
+  font-size: 1.2em;
+  margin-bottom: 1em;
+  color: var(--dark-text-color);
+}
+.get-started-button {
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+  background-color: var(--accent-color);
+  color: white;
+  border-radius: 5px;
+  transition: background-color 0.25s;
+}
+.get-started-button:hover {
+  background-color: var(--secondary-color);
+}
+
+.center-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh; /* Full viewport height */
+  text-align: center;
+}
+
+
+/* Profile button places in the navbar (top right) after logging in */
+.profile-button {
+  padding: 8px 16px;
+  font-size: 1em;
+  border: none;
+  border-radius: 50%;
+  color: white;
+  background-color: var(--primary-color);
+  cursor: pointer;
+  transition: background-color 0.25s;
+}
+.profile-button:hover {
+  background-color: var(--secondary-color);
+}
+
+
+/* Container to offset content below navbar */
+.schedule-content {
+  padding-top: 5%; /* Adjust based on navbar height */
+  display: flex;
+  flex-direction: column;
+  align-items: normal;
+  text-align: center;
+}
+
+.page-title {
+  font-size: 2.5em;
+  color: var(--primary-color); /* Adjust based on your color palette */
+  margin-bottom: 20px;
+}
+
+.schedule-builder {
+  width: 100%;
+  max-width: 100%;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: white; /* Background color for the schedule builder */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+
+
+
