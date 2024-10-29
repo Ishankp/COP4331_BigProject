@@ -257,15 +257,86 @@ app.post('/api/register', async (req, res) => {
 	res.status(success ? 200 : 500).json({ success, error });
 });
 
-//	Add to Schedule API
+//	addEvent API
 
-//	View Schedule API
+app.post('/api/addEvent', async (req, res) => {
+	const { UserID, event, desc, start, end, days } = req.body;
+	let error = '';
+	let success = false;
 
-//	Delete to Schedule API
+	try {
+		const db = client.db('SchedulePlanner');
 
-//	Add Friend API
+		// Verify if UserID is valid and convert it as needed
+		const userIdObj = typeof UserID === 'string' && ObjectId.isValid(UserID) ? new ObjectId(UserID) : parseInt(UserID);
 
-//	Delete Friend API
+		// Define the new event object
+		const newEvent = {
+			event,
+			desc,
+			start,
+			end,
+			days  // Array of integers representing days (0 for Sunday, 6 for Saturday)
+		};
+
+		// Update the user's schedule array in the Planner collection
+		const result = await db.collection('Planner').updateOne(
+			{ UserID: userIdObj },  // Match the user by ID
+			{ $push: { schedule: newEvent } }  // Add to the user's schedule array
+		);
+
+		// Check if the operation was successful
+		if (result.modifiedCount > 0) {
+			success = true;
+		} else {
+			error = 'Failed to add event';
+		}
+	} catch (err) {
+		console.error('Error adding event:', err);
+		error = 'Server error: ' + err.message;
+	}
+
+	res.status(success ? 200 : 500).json({ success, error });
+});
+
+//	View Schedule API (Work in progress)
+
+//	deleteEvent API
+app.post('/api/deleteEvent', async (req, res) => {
+	const { UserID, event } = req.body; // Only require UserID and event title
+	let error = '';
+	let success = false;
+
+	try {
+		const db = client.db('SchedulePlanner');
+
+		// Verify if UserID is valid and convert it as needed
+		const userIdObj = typeof UserID === 'string' && ObjectId.isValid(UserID) ? new ObjectId(UserID) : parseInt(UserID);
+
+		// Remove the specified event from the user's schedule array by event title
+		const result = await db.collection('Planner').updateOne(
+			{ UserID: userIdObj },  // Match the user by ID
+			{ $pull: { schedule: { event } } }  // Remove by matching event title only
+		);
+
+		// Check if the operation was successful
+		if (result.modifiedCount > 0) {
+			success = true;
+		} else {
+			error = 'Failed to delete event';
+		}
+	} catch (err) {
+		console.error('Error deleting event:', err);
+		error = 'Server error: ' + err.message;
+	}
+
+	res.status(success ? 200 : 500).json({ success, error });
+});
+
+
+//	Add Friend API (Work in progress)
+
+//	Delete Friend API (Work in progress)
 
 
 
