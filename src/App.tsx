@@ -1,20 +1,19 @@
-
-//import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import './App.css';
+
 import LoginPage from './pages/LoginPage';
-import CardPage from './pages/CardPage';
+import WelcomePage from './pages/WelcomePage';
+import ScheduleBuildPage from './pages/ScheduleBuildPage';
 
 function App() {
-	return (
-		<Router >
-			<Routes>
-				<Route path="/" element={<LoginPage />} />
-				<Route path="/cards" element={<CardPage />} />
-			</Routes>
-		</Router>
-	);
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<WelcomePage />} />
+        <Route path="/cards" element={<ScheduleBuildPage />} />
+      </Routes>
+    </BrowserRouter>
+      );
 }
 
 export default App;
