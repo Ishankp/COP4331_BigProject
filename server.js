@@ -258,7 +258,6 @@ app.post('/api/register', async (req, res) => {
 });
 
 //	addEvent API
-
 app.post('/api/addEvent', async (req, res) => {
     const { UserID, event, desc, start, end, days } = req.body;
     let error = '';
@@ -382,16 +381,122 @@ app.put('/api/updateEvent', async (req, res) => {
 	res.status(success ? 200 : 500).json({ success, error });
 });
 
+//	addContact API
+app.post('/api/addContact', async (req, res) => {
+    let { UserID, contactID } = req.body;
+    let error = '';
+    let success = false;
 
-//	Add Friend API (Work in progress)
+    try {
+        const db = client.db('SchedulePlanner');
 
-//	Delete Friend API (Work in progress)
+        // Ensure userID and contactID are treated as integers
+        userID = parseInt(UserID, 10);
+        contactID = parseInt(contactID, 10);
 
-//	View Schedule API (Work in progress)
+        // Log the parsed userID and contactID to debug if they're correctly parsed
+        console.log("Parsed userID:", userID);
+        console.log("Parsed contactID:", contactID);
+
+        // Check if both user and contact exist
+        const user = await db.collection('Users').findOne({ UserID: userID });
+        const contact = await db.collection('Users').findOne({ UserID: contactID });
+
+        if (!user) {
+            error = 'User not found';
+            return res.status(404).json({ success, error });
+        }
+
+        if (!contact) {
+            error = 'Contact not found';
+            return res.status(404).json({ success, error });
+        }
+
+        // Check if contact is already in the user's contact list
+        if (user.contact_list.includes(contactID)) {
+            error = 'Contact already added';
+            return res.status(400).json({ success, error });
+        }
+
+        // Add contactID to user's contact_list
+        const result = await db.collection('Users').updateOne(
+            { UserID: userID },
+            { $push: { contact_list: contactID } }
+        );
+
+        if (result.modifiedCount > 0) {
+            success = true;
+        } else {
+            error = 'Failed to add contact';
+        }
+    } catch (err) {
+        console.error('Error adding contact:', err);
+        error = 'Server error: ' + err.message;
+    }
+
+    res.status(success ? 200 : 500).json({ success, error });
+});
+
+// deleteContact API
+app.post('/api/deleteContact', async (req, res) => {
+    let { UserID, contactID } = req.body;
+    let error = '';
+    let success = false;
+
+    try {
+        const db = client.db('SchedulePlanner');
+
+        // Ensure userID and contactID are treated as integers
+        userID = parseInt(UserID, 10);
+        contactID = parseInt(contactID, 10);
+
+        // Log the parsed userID and contactID for debugging
+        console.log("Parsed userID:", userID);
+        console.log("Parsed contactID:", contactID);
+
+        // Check if both user and contact exist
+        const user = await db.collection('Users').findOne({ UserID: userID });
+        const contact = await db.collection('Users').findOne({ UserID: contactID });
+
+        if (!user) {
+            error = 'User not found';
+            return res.status(404).json({ success, error });
+        }
+
+        if (!contact) {
+            error = 'Contact not found';
+            return res.status(404).json({ success, error });
+        }
+
+        // Check if contact is actually in the user's contact list
+        if (!user.contact_list.includes(contactID)) {
+            error = 'Contact not found in user\'s contact list';
+            return res.status(400).json({ success, error });
+        }
+
+        // Remove contactID from user's contact_list
+        const result = await db.collection('Users').updateOne(
+            { UserID: userID },
+            { $pull: { contact_list: contactID } }
+        );
+
+        if (result.modifiedCount > 0) {
+            success = true;
+        } else {
+            error = 'Failed to delete contact';
+        }
+    } catch (err) {
+        console.error('Error deleting contact:', err);
+        error = 'Server error: ' + err.message;
+    }
+
+    res.status(success ? 200 : 500).json({ success, error });
+});
+
 
 //	Email Lost Password API (Work in progress)
 
-
+// viewEvent API
 
 
 
