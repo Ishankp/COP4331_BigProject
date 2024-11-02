@@ -3,44 +3,41 @@ import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 
-interface CustomEvent {
+interface FrontendEvent {
   title: string;
-  start: Date;
-  end: Date;
+  start: Date; 
+  end: Date;   
   location?: string;
   description?: string;
+  days?: number[];
+}
+
+
+interface BackendEvent {
+  UserID: number;
+  event: string;
+  desc: string;
+  start: string; // Military time as a string, e.g., "1800"
+  end: string;   // Military time as a string, e.g., "1900"
+  days: number[];
 }
 
 const localizer = momentLocalizer(moment);
 
-const initialEvents: CustomEvent[] = [];
-
 const WeeklyScheduler: React.FC = () => {
-  const secondaryColor = '#ff6b6b'; // Replace with your secondary color
+  const secondaryColor = '#ff6b6b';
+  const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
+  const userID = userData.id; // Ensure UserID is obtained from localStorage
 
-  const eventStyleGetter = (event: any, start: any, end: any, isSelected: boolean) => {
-    return {
-      style: {
-        backgroundColor: secondaryColor,
-        borderRadius: '5px',
-        opacity: 0.8,
-        color: 'white',
-        border: 'none',
-        display: 'block',
-      },
-    };
-  };
-
-
-  const [events, setEvents] = useState<CustomEvent[]>(initialEvents);
+  const [events, setEvents] = useState<FrontendEvent[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newEvent, setNewEvent] = useState({
     title: '',
     day: 'Sunday',
-    startHour: '12',
+    startHour: '5',
     startMinute: '00',
-    startAMPM: 'AM',
-    endHour: '12',
+    startAMPM: 'PM',
+    endHour: '6',
     endMinute: '00',
     endAMPM: 'PM',
     location: '',
@@ -68,17 +65,56 @@ const WeeklyScheduler: React.FC = () => {
     const { name, value } = e.target;
     setNewEvent((prev) => ({ ...prev, [name]: value }));
   };
-  
 
-  const addEvent = () => {
-    const selectedDay = moment().day(newEvent.day); // Set to the selected day of the current week
+  const saveEventToBackend = async (event: BackendEvent) => {
+    try {
+      const response = await fetch('http://localhost:5000/api/addEvent', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(event), // Send full event object, including UserID
+      });
+
+      const data = await response.json();
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to add event');
+      }
+    } catch (error) {
+      console.error('Error adding event:', error);
+      if (error instanceof Error) {
+        alert(error.message);
+      } else {
+        alert('An unknown error occurred.');
+      }
+    }
+  };
+
+  const addEvent = async () => {
+    
+    // Variables used in Frontend Event
+    const selectedDay = moment().day(newEvent.day); 
     const startHour = parseInt(newEvent.startHour) + (newEvent.startAMPM === 'PM' ? 12 : 0);
     const endHour = parseInt(newEvent.endHour) + (newEvent.endAMPM === 'PM' ? 12 : 0);
-
     const startDate = selectedDay.clone().hour(startHour).minute(parseInt(newEvent.startMinute)).toDate();
     const endDate = selectedDay.clone().hour(endHour).minute(parseInt(newEvent.endMinute)).toDate();
+    
+    // Convert start and end times to military (24-hour) format strings
+    const startHourMT = parseInt(newEvent.startHour) % 12 + (newEvent.startAMPM === 'PM' ? 12 : 0);
+    const endHourMT = parseInt(newEvent.endHour) % 12 + (newEvent.endAMPM === 'PM' ? 12 : 0);
 
-    const event: CustomEvent = {
+    // Format hours and minutes as two-digit strings for military time format
+    const formattedStartHour = startHourMT.toString().padStart(2, '0');
+    const formattedStartMinute = newEvent.startMinute.padStart(2, '0');
+    const formattedEndHour = endHourMT.toString().padStart(2, '0');
+    const formattedEndMinute = newEvent.endMinute.padStart(2, '0');
+
+    // Create four-digit military time strings
+    const startTime = `${formattedStartHour}${formattedStartMinute}`; // e.g., "1800" for 6:00 PM
+    const endTime = `${formattedEndHour}${formattedEndMinute}`; // e.g., "1900" for 7:00 PM
+
+    // Event to be displayed in frontend
+    const event: FrontendEvent = {
       title: newEvent.title,
       start: startDate,
       end: endDate,
@@ -86,35 +122,34 @@ const WeeklyScheduler: React.FC = () => {
       description: newEvent.description,
     };
 
+    // Update local events state with FrontendEvent
     setEvents([...events, event]);
+
+    // Convert to BackendEvent for backend API call
+    const newBackendEvent: BackendEvent = {
+      UserID: userID,  
+      event: newEvent.title,
+      desc: newEvent.description,
+      start: startTime,
+      end: endTime,
+      days: [moment(newEvent.day, 'dddd').day()],
+    };
+
+    // Send the new event object to the backend
+    await saveEventToBackend(newBackendEvent);
     closeModal();
   };
 
   const formats = {
-    dayFormat: (date: Date) => moment(date).format('ddd'), // Show day name only (e.g., "Sun")
+    dayFormat: (date: Date) => moment(date).format('ddd'),
   };
 
   return (
     <div className="schedule-container" style={{ position: 'relative' }}>
-      {/* Add Event Button Container Above the Calendar */}
       <div className="button-container" style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '10px' }}>
-        {/* <button
-          onClick={openModal}
-          style={{
-            padding: '10px 20px',
-            backgroundColor: '#FF6B6B',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-          }}
-        >
-          Add Event
-        </button> */}
         <button className="add-event-button" onClick={openModal}>
           Add Event
         </button>
-
       </div>
 
       <Calendar
@@ -129,10 +164,8 @@ const WeeklyScheduler: React.FC = () => {
         endAccessor="end"
         nowIndicator={false}
         style={{ height: 600 }}
-        eventPropGetter={eventStyleGetter} // Apply custom styles to events
       />
 
-      {/* Modal for Adding Event */}
       {isModalOpen && (
         <div className="modal">
           <div className="modal-content">
@@ -183,6 +216,7 @@ const WeeklyScheduler: React.FC = () => {
                   <option value="00">00</option>
                   <option value="15">15</option>
                   <option value="30">30</option>
+                  <option value="45">45</option>
                 </select>
                 <select name="endAMPM" value={newEvent.endAMPM} onChange={handleInputChange}>
                   <option value="AM">AM</option>
@@ -205,10 +239,8 @@ const WeeklyScheduler: React.FC = () => {
           </div>
         </div>
       )}
-
     </div>
   );
 };
 
 export default WeeklyScheduler;
-
