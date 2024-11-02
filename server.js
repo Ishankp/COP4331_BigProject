@@ -161,46 +161,80 @@ res.status(200).json(ret);
 });
 
 //	Login API
-app.post('/api/login', async (req, res, next) =>
-{
-// incoming: login, password
-// outgoing: id, firstName, lastName, error
-var error = '';
-const { login, password } = req.body;
-const db = client.db('SchedulePlanner');
-const results = await
-db.collection('Users').find({Login:login,Password:password}).toArray();
-var id = -1;
-var fn = '';
-var ln = '';
-if( results.length > 0 )
-{
-id = results[0].UserId;
-fn = results[0].FirstName;
-ln = results[0].LastName;
-}
-var ret = { id:id, firstName:fn, lastName:ln, error:''};
-res.status(200).json(ret);
+// app.post('/api/login', async (req, res, next) =>
+// {
+// // incoming: login, password
+// // outgoing: id, firstName, lastName, error
+// var error = '';
+// const { login, password } = req.body;
+// const db = client.db('SchedulePlanner');
+// const results = await
+// db.collection('Users').find({Login:login,Password:password}).toArray();
+// var id = -1;
+// var fn = '';
+// var ln = '';
+// if( results.length > 0 )
+// {
+// id = results[0].UserId;
+// fn = results[0].FirstName;
+// ln = results[0].LastName;
+// }
+// var ret = { id:id, firstName:fn, lastName:ln, error:''};
+// res.status(200).json(ret);
+// });
+
+
+
+
+// new Login API
+app.post('/api/login', async (req, res, next) => {
+    // incoming: login, password
+    // outgoing: id, firstName, lastName, error
+    const { login, password } = req.body;
+    const db = client.db('SchedulePlanner');
+    
+    try {
+        const results = await db.collection('Users').findOne({ Login: login, Password: password });
+        
+        if (results) {
+            const ret = { 
+                id: results.UserID,            // Ensure `UserID` matches exactly with MongoDB field name
+                firstName: results.FirstName, 
+                lastName: results.LastName, 
+                error: '' 
+            };
+            res.status(200).json(ret);
+        } else {
+            res.status(200).json({ id: -1, firstName: '', lastName: '', error: 'User not found' });
+        }
+    } catch (err) {
+        console.error('Error during login:', err);
+        res.status(500).json({ id: -1, firstName: '', lastName: '', error: 'Server error' });
+    }
 });
+
+
 
 //	SearchCards API
 app.post('/api/searchcards', async (req, res, next) => {
-  // incoming: userId, search
-  // outgoing: results[], error
-  var error = '';
-  const { userId, search } = req.body;
-  var _search = search.trim();
-  try {
-      const db = client.db('SchedulePlanner');
-      const results = await db.collection('Cards').find({ "Card": { $regex: new RegExp(_search + '.*', 'i') } }).toArray();
-      var _ret = results.map(result => result.Card); // Simplified mapping
-      res.status(200).json({ results: _ret, error: error });
-  } catch (e) {
-      error = e.toString();
-      console.error('Error searching cards:', error);
-      res.status(500).json({ results: [], error });
-  }
-});
+	// incoming: userId, search
+	// outgoing: results[], error
+	var error = '';
+	const { userId, search } = req.body;
+	var _search = search.trim();
+	try {
+		const db = client.db('SchedulePlanner');
+		const results = await db.collection('Cards').find({ "Card": { $regex: new RegExp(_search + '.*', 'i') } }).toArray();
+		var _ret = results.map(result => result.Card); // Simplified mapping
+		res.status(200).json({ results: _ret, error: error });
+	} catch (e) {
+		error = e.toString();
+		console.error('Error searching cards:', error);
+		res.status(500).json({ results: [], error });
+	}
+  });
+
+
 
 //	Register API
 const { ObjectId } = require('mongodb');  // Ensure ObjectId is imported
