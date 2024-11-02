@@ -126,7 +126,11 @@ function Login() {
       if (res.id <= 0) {
         setMessage('User/Password combination incorrect');
       } else {
-        const user = { firstName: res.firstName, lastName: res.lastName, id: res.id };
+        const user = { 
+          firstName: res.firstName, 
+          lastName: res.lastName, 
+          id: String(res.id) 
+        };
         localStorage.setItem('user_data', JSON.stringify(user));
 
         setMessage('');
@@ -137,6 +141,7 @@ function Login() {
       setMessage('Error logging in. Please try again.');
     }
   }
+
 
   return (
     <div className="center-page">
