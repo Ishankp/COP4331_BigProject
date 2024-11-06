@@ -14,108 +14,6 @@ client.connect()
   });
 
 
-var cardList =
-[
-	'Roy Campanella',
-	'Paul Molitor',
-	'Tony Gwynn',
-	'Dennis Eckersley',
-	'Reggie Jackson',
-	'Gaylord Perry',
-	'Buck Leonard',
-	'Rollie Fingers',
-	'Charlie Gehringer',
-	'Wade Boggs',
-	'Carl Hubbell',
-	'Dave Winfield',
-	'Jackie Robinson',
-	'Ken Griffey, Jr.',
-	'Al Simmons',
-	'Chuck Klein',
-	'Mel Ott',
-	'Mark McGwire',
-	'Nolan Ryan',
-	'Ralph Kiner',
-	'Yogi Berra',
-	'Goose Goslin',
-	'Greg Maddux',
-	'Frankie Frisch',
-	'Ernie Banks',
-	'Ozzie Smith',
-	'Hank Greenberg',
-	'Kirby Puckett',
-	'Bob Feller',
-	'Dizzy Dean',
-	'Joe Jackson',
-	'Sam Crawford',
-	'Barry Bonds',
-	'Duke Snider',
-	'George Sisler',
-	'Ed Walsh',
-	'Tom Seaver',
-	'Willie Stargell',
-	'Bob Gibson',
-	'Brooks Robinson',
-	'Steve Carlton',
-	'Joe Medwick',
-	'Nap Lajoie',
-	'Cal Ripken, Jr.',
-	'Mike Schmidt',
-	'Eddie Murray',
-	'Tris Speaker',
-	'Al Kaline',
-	'Sandy Koufax',
-	'Willie Keeler',
-	'Pete Rose',
-	'Robin Roberts',
-	'Eddie Collins',
-	'Lefty Gomez',
-	'Lefty Grove',
-	'Carl Yastrzemski',
-	'Frank Robinson',
-	'Juan Marichal',
-	'Warren Spahn',
-	'Pie Traynor',
-	'Roberto Clemente',
-	'Harmon Killebrew',
-	'Satchel Paige',
-	'Eddie Plank',
-	'Josh Gibson',
-	'Oscar Charleston',
-	'Mickey Mantle',
-	'Cool Papa Bell',
-	'Johnny Bench',
-	'Mickey Cochrane',
-	'Jimmie Foxx',
-	'Jim Palmer',
-	'Cy Young',
-	'Eddie Mathews',
-	'Honus Wagner',
-	'Paul Waner',
-	'Grover Alexander',
-	'Rod Carew',
-	'Joe DiMaggio',
-	'Joe Morgan',
-	'Stan Musial',
-	'Bill Terry',
-	'Rogers Hornsby',
-	'Lou Brock',
-	'Ted Williams',
-	'Bill Dickey',
-	'Christy Mathewson',
-	'Willie McCovey',
-	'Lou Gehrig',
-	'George Brett',
-	'Hank Aaron',
-	'Harry Heilmann',
-	'Walter Johnson',
-	'Roger Clemens',
-	'Ty Cobb',
-	'Whitey Ford',
-	'Willie Mays',
-	'Rickey Henderson',
-	'Babe Ruth'
-];
 
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -138,55 +36,9 @@ app.use((req, res, next) =>
 	next();
 });
 
-//	AddCard API
-app.post('/api/addcard', async (req, res, next) =>
-{
-// incoming: userId, color
-// outgoing: error
-const { userId, card } = req.body;
-const newCard = {Card:card,UserId:userId};
-var error = '';
-try
-{
-const db = client.db('SchedulePlanner');
-const result = db.collection('Cards').insertOne(newCard);
-}
-catch(e)
-{
-error = e.toString();
-}
-cardList.push( card );
-var ret = { error: error };
-res.status(200).json(ret);
-});
-
-//	Login API
-// app.post('/api/login', async (req, res, next) =>
-// {
-// // incoming: login, password
-// // outgoing: id, firstName, lastName, error
-// var error = '';
-// const { login, password } = req.body;
-// const db = client.db('SchedulePlanner');
-// const results = await
-// db.collection('Users').find({Login:login,Password:password}).toArray();
-// var id = -1;
-// var fn = '';
-// var ln = '';
-// if( results.length > 0 )
-// {
-// id = results[0].UserId;
-// fn = results[0].FirstName;
-// ln = results[0].LastName;
-// }
-// var ret = { id:id, firstName:fn, lastName:ln, error:''};
-// res.status(200).json(ret);
-// });
 
 
-
-
-// new Login API
+// Login API
 app.post('/api/login', async (req, res, next) => {
     // incoming: login, password
     // outgoing: id, firstName, lastName, error
@@ -215,31 +67,8 @@ app.post('/api/login', async (req, res, next) => {
 
 
 
-//	SearchCards API
-app.post('/api/searchcards', async (req, res, next) => {
-	// incoming: userId, search
-	// outgoing: results[], error
-	var error = '';
-	const { userId, search } = req.body;
-	var _search = search.trim();
-	try {
-		const db = client.db('SchedulePlanner');
-		const results = await db.collection('Cards').find({ "Card": { $regex: new RegExp(_search + '.*', 'i') } }).toArray();
-		var _ret = results.map(result => result.Card); // Simplified mapping
-		res.status(200).json({ results: _ret, error: error });
-	} catch (e) {
-		error = e.toString();
-		console.error('Error searching cards:', error);
-		res.status(500).json({ results: [], error });
-	}
-  });
-
-
-
 //	Register API
 const { ObjectId } = require('mongodb');  // Ensure ObjectId is imported
-
-
 app.post('/api/register', async (req, res) => {
 	const { FirstName, LastName, Login, Password, email, ShareKey } = req.body;
 	let error = '';
@@ -290,6 +119,8 @@ app.post('/api/register', async (req, res) => {
   
 	res.status(success ? 200 : 500).json({ success, error });
 });
+
+
 
 //	addEvent API
 app.post('/api/addEvent', async (req, res) => {
@@ -342,6 +173,8 @@ app.post('/api/addEvent', async (req, res) => {
     res.status(success ? 200 : 500).json({ success, error });
 });
 
+
+
 //	deleteEvent API
 app.post('/api/deleteEvent', async (req, res) => {
 	const { UserID, event } = req.body; // Only require UserID and event title
@@ -373,6 +206,8 @@ app.post('/api/deleteEvent', async (req, res) => {
 
 	res.status(success ? 200 : 500).json({ success, error });
 });
+
+
 
 // updateEvent API
 app.put('/api/updateEvent', async (req, res) => {
@@ -414,6 +249,8 @@ app.put('/api/updateEvent', async (req, res) => {
 
 	res.status(success ? 200 : 500).json({ success, error });
 });
+
+
 
 //	addContact API
 app.post('/api/addContact', async (req, res) => {
@@ -470,6 +307,8 @@ app.post('/api/addContact', async (req, res) => {
 
     res.status(success ? 200 : 500).json({ success, error });
 });
+
+
 
 // deleteContact API
 app.post('/api/deleteContact', async (req, res) => {
@@ -528,9 +367,38 @@ app.post('/api/deleteContact', async (req, res) => {
 });
 
 
-//	Email Lost Password API (Work in progress)
 
 // viewEvent API
+app.post('/api/viewEvent', async (req, res) => {
+    const { UserID } = req.body; // Expecting UserID in the request body
+    let error = '';
+    let events = [];
+
+    try {
+        const db = client.db('SchedulePlanner');
+
+        // Convert UserID to the appropriate type if needed
+        const userIdObj = typeof UserID === 'string' && ObjectId.isValid(UserID) ? new ObjectId(UserID) : parseInt(UserID);
+
+        // Find the user's planner document by UserID
+        const userPlanner = await db.collection('Planner').findOne({ UserID: userIdObj });
+
+        if (userPlanner && userPlanner.schedule) {
+            events = userPlanner.schedule; // Set the events array from the user's schedule
+        } else {
+            error = 'No events found or invalid UserID';
+        }
+    } catch (err) {
+        console.error('Error fetching events:', err);
+        error = 'Server error: ' + err.message;
+    }
+
+    res.status(error ? 500 : 200).json({ events, error });
+});
+
+
+
+//	Email Lost Password API (Work in progress)
 
 
 
