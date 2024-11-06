@@ -493,10 +493,38 @@ app.post('/api/deleteContact', async (req, res) => {
     res.status(success ? 200 : 500).json({ success, error });
 });
 
+// viewEvent API
+app.get('/api/viewEvent', async (req, res) => {
+    const { UserID } = req.body; // Expecting UserID in the request body
+    let error = '';
+    let events = [];
+
+    try {
+        const db = client.db('SchedulePlanner');
+
+        // Convert UserID to the appropriate type if needed
+        const userIdObj = typeof UserID === 'string' && ObjectId.isValid(UserID) ? new ObjectId(UserID) : parseInt(UserID);
+
+        // Find the user's planner document by UserID
+        const userPlanner = await db.collection('Planner').findOne({ UserID: userIdObj });
+
+        if (userPlanner && userPlanner.schedule) {
+            events = userPlanner.schedule; // Set the events array from the user's schedule
+        } else {
+            error = 'No events found or invalid UserID';
+        }
+    } catch (err) {
+        console.error('Error fetching events:', err);
+        error = 'Server error: ' + err.message;
+    }
+
+    res.status(error ? 500 : 200).json({ events, error });
+});
+
 
 //	Email Lost Password API (Work in progress)
 
-// viewEvent API
+
 
 
 
