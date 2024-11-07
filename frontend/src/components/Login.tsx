@@ -96,7 +96,7 @@
 import React, { useState } from 'react';
 
 function Login() {
-  const app_name = 'cop4331-3.com';
+  const app_name = 'wattareyoudoing.us';
 
   function buildPath(route: string): string {
     return process.env.NODE_ENV !== 'development'
