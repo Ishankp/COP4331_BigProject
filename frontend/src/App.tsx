@@ -4,6 +4,7 @@ import './App.css';
 import LoginPage from './pages/LoginPage';
 import WelcomePage from './pages/WelcomePage';
 import ScheduleBuildPage from './pages/ScheduleBuildPage';
+import DashboardPage from './pages/DashboardPage'; // Import the DashboardPage
 
 function App() {
   return (
@@ -11,9 +12,10 @@ function App() {
       <Routes>
         <Route path="/" element={<WelcomePage />} />
         <Route path="/cards" element={<ScheduleBuildPage />} />
+        <Route path="/dashboard" element={<DashboardPage />} /> {/* Add the DashboardPage route */}
       </Routes>
     </BrowserRouter>
-      );
+  );
 }
 
 export default App;

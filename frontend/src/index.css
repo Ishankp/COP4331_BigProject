@@ -447,6 +447,32 @@ button:focus-visible {
 
 
 
+.dropdown-menu {
+  position: absolute;
+  right: 10px;
+  top: 50px;
+  background-color: #FF6B6B;
+
+
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  min-width: 100px;
+}
+.dropdown-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  text-align: left;
+  background-color: #FF6B6B;
+  border: none;
+  width: 100%;
+  text-align: left;
+  font-size: 14px;
+}
+.dropdown-item:hover {
+  background-color: #a44343;
+}
 
 
 @import '@fullcalendar/core/main.css';
