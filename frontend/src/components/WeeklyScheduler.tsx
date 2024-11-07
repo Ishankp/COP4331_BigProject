@@ -25,7 +25,7 @@ interface BackendEvent {
 const localizer = momentLocalizer(moment);
 
 const WeeklyScheduler: React.FC = () => {
-  const secondaryColor = '#ff6b6b';
+  // const secondaryColor = '#ff6b6b';
   const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
   const userID = userData.id; // Ensure UserID is obtained from localStorage
 
