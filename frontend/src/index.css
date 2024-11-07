@@ -237,17 +237,27 @@ button:focus-visible {
 }
 
 .modal-content {
-  background-color: white;
-  padding: 20px;
+  background-color: #fff;
   border-radius: 8px;
-  width: 25%;
-  max-width: 90%;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+  margin: 15% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%; /* Adjust as needed */
+  max-width: 500px; /* Limit maximum width */
 }
 
+/* Responsive Adjustments using Media Queries */
+@media (max-width: 768px) { 
+  .modal-content {
+    width: 90%; /* Adjust width for smaller screens */
+  }
+}
+
+@media (max-width: 480px) { 
+  .modal-content {
+    width: 95%; /* Adjust further for very small screens */
+  }
+}
 .modal-content h2 {
   margin: 0;
   font-size: 1.5rem;
