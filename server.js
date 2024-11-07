@@ -70,7 +70,7 @@ app.post('/api/login', async (req, res, next) => {
 //	Register API
 const { ObjectId } = require('mongodb');  // Ensure ObjectId is imported
 app.post('/api/register', async (req, res) => {
-	const { FirstName, LastName, Login, Password, email, ShareKey } = req.body;
+	const { FirstName, LastName, Login, Password, email, ShareKey, isVerified, Token } = req.body;
 	let error = '';
 	let success = false;
   
@@ -97,7 +97,9 @@ app.post('/api/register', async (req, res) => {
 		email,
 		UserID,
 		ShareKey: ShareKey || null,
-		contact_list: []
+		contact_list: [],
+        isVerified,
+        Token
 	  };
   
 	  const result = await db.collection('Users').insertOne(newUser);
