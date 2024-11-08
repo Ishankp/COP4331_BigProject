@@ -126,7 +126,7 @@ const SchedulerView: React.FC = () => {
   const secondaryColor = '#ff6b6b';
   const navigate = useNavigate(); // Initialize navigate function
 
-  const eventPropGetter = (event: FrontendEvent) => ({
+  const eventPropGetter = (/*event: FrontendEvent*/) => ({
     style: {
       backgroundColor: secondaryColor,
       color: 'white',
