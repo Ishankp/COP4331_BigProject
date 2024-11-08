@@ -96,7 +96,7 @@
 import React, { useState } from 'react';
 
 function Login() {
-  const app_name = 'wattareyoudoing.us';
+  const app_name = 'cop4331-3.com';
 
   function buildPath(route: string): string {
     return process.env.NODE_ENV !== 'development'
@@ -134,7 +134,7 @@ function Login() {
         localStorage.setItem('user_data', JSON.stringify(user));
 
         setMessage('');
-        window.location.href = '/cards';
+        window.location.href = '/schedulebuilder';
       }
     } catch (error: any) {
       console.error(error);
