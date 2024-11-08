@@ -475,6 +475,21 @@ button:focus-visible {
 }
 
 
+.schedule-view {
+  width: 100%;
+  max-width: 90vw;
+  padding: 1%;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  background-color: white; 
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-left: auto; /* Automatically pushes the element to the right */
+  margin-left: 10%;
+  margin-top: 5%;
+  max-height: 550px; /* Add a maximum height to limit its vertical size */
+  /* overflow-y: auto; */
+}
+
 @import '@fullcalendar/core/main.css';
 @import '@fullcalendar/daygrid/main.css';
 

@@ -11,7 +11,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<WelcomePage />} />
-        <Route path="/cards" element={<ScheduleBuildPage />} />
+        <Route path="/schedulebuilder" element={<ScheduleBuildPage />} />
         <Route path="/dashboard" element={<DashboardPage />} /> {/* Add the DashboardPage route */}
       </Routes>
     </BrowserRouter>
