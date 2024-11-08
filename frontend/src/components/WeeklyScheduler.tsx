@@ -41,7 +41,7 @@ const localizer = momentLocalizer(moment);
 const WeeklyScheduler: React.FC = () => {
   const secondaryColor = '#ff6b6b';
 
-  const eventPropGetter = (event: FrontendEvent) => ({
+  const eventPropGetter = (/*event: FrontendEvent*/) => ({
     style: {
       backgroundColor: secondaryColor,
       color: 'white',
