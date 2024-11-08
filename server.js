@@ -1,4 +1,3 @@
-
 const MongoClient = require('mongodb').MongoClient;
 
 // Correctly URL-encoded password
@@ -121,8 +120,7 @@ app.post('/api/register', async (req, res) => {
 });
 
 
-
-//	addEvent API
+//  addEvent API
 app.post('/api/addEvent', async (req, res) => {
     const { UserID, event, desc, start, end, days } = req.body;
     let error = '';
@@ -131,35 +129,28 @@ app.post('/api/addEvent', async (req, res) => {
     try {
         const db = client.db('SchedulePlanner');
 
-        // Verify if UserID is valid and convert it as needed
+        // Verify if UserID is valid
         const userIdObj = typeof UserID === 'string' && ObjectId.isValid(UserID) ? new ObjectId(UserID) : parseInt(UserID);
 
-        // Check if an event with the same name already exists in the user's schedule
-        const existingEvent = await db.collection('Planner').findOne(
-            { UserID: userIdObj, 'schedule.event': event }
-        );
+        // Create eventID using ObjectId or other method
+        const eventID = new ObjectId(); // Unique identifier for the event
 
-        if (existingEvent) {
-            error = 'Event with this name already exists';
-            return res.status(400).json({ success, error });
-        }
-
-        // Define the new event object
+        // Define the new event object with eventID
         const newEvent = {
+            eventID, // Include the eventID field
             event,
             desc,
             start,
             end,
-            days  // Array of integers representing days (0 for Sunday, 6 for Saturday)
+            days
         };
 
-        // Update the user's schedule array in the Planner collection
+        // Update the user's schedule in the Planner collection
         const result = await db.collection('Planner').updateOne(
-            { UserID: userIdObj },  // Match the user by ID
-            { $push: { schedule: newEvent } }  // Add to the user's schedule array
+            { UserID: userIdObj }, // Match by UserID
+            { $push: { schedule: newEvent } } // Add event to schedule array
         );
 
-        // Check if the operation was successful
         if (result.modifiedCount > 0) {
             success = true;
         } else {
@@ -175,79 +166,90 @@ app.post('/api/addEvent', async (req, res) => {
 
 
 
+
 //	deleteEvent API
 app.post('/api/deleteEvent', async (req, res) => {
-	const { UserID, event } = req.body; // Only require UserID and event title
-	let error = '';
-	let success = false;
+    const { UserID, eventID } = req.body; // Expect eventID as ObjectId in the request
+    let error = '';
+    let success = false;
 
-	try {
-		const db = client.db('SchedulePlanner');
+    try {
+        const db = client.db('SchedulePlanner');
 
-		// Verify if UserID is valid and convert it as needed
-		const userIdObj = typeof UserID === 'string' && ObjectId.isValid(UserID) ? new ObjectId(UserID) : parseInt(UserID);
+        // Ensure eventID is a valid ObjectId
+        const eventObjectId = ObjectId.isValid(eventID) ? new ObjectId(eventID) : null;
+        if (!eventObjectId) {
+            return res.status(400).json({ success, error: 'Invalid eventID' });
+        }
 
-		// Remove the specified event from the user's schedule array by event title
-		const result = await db.collection('Planner').updateOne(
-			{ UserID: userIdObj },  // Match the user by ID
-			{ $pull: { schedule: { event } } }  // Remove by matching event title only
-		);
+        // Verify if UserID is valid
+        const userIdObj = typeof UserID === 'string' && ObjectId.isValid(UserID) ? new ObjectId(UserID) : parseInt(UserID);
 
-		// Check if the operation was successful
-		if (result.modifiedCount > 0) {
-			success = true;
-		} else {
-			error = 'Failed to delete event';
-		}
-	} catch (err) {
-		console.error('Error deleting event:', err);
-		error = 'Server error: ' + err.message;
-	}
+        // Remove event by eventID from the user's schedule
+        const result = await db.collection('Planner').updateOne(
+            { UserID: userIdObj }, // Match by UserID
+            { $pull: { schedule: { eventID: eventObjectId } } } // Remove event by eventID
+        );
 
-	res.status(success ? 200 : 500).json({ success, error });
+        if (result.modifiedCount > 0) {
+            success = true;
+        } else {
+            error = 'Failed to delete event or event not found';
+        }
+    } catch (err) {
+        console.error('Error deleting event:', err);
+        error = 'Server error: ' + err.message;
+    }
+
+    res.status(success ? 200 : 500).json({ success, error });
 });
 
 
 
 // updateEvent API
 app.put('/api/updateEvent', async (req, res) => {
-	const { UserID, currentEvent, newEvent, newDesc, newStart, newEnd, newDays } = req.body;
-	let error = '';
-	let success = false;
+    const { UserID, eventID, newEvent, newDesc, newStart, newEnd, newDays } = req.body;
+    let error = '';
+    let success = false;
 
-	try {
-		const db = client.db('SchedulePlanner');
+    try {
+        const db = client.db('SchedulePlanner');
 
-		// Verify if UserID is valid and convert it as needed
-		const userIdObj = typeof UserID === 'string' && ObjectId.isValid(UserID) ? new ObjectId(UserID) : parseInt(UserID);
+        // Ensure eventID is a valid ObjectId
+        const eventObjectId = ObjectId.isValid(eventID) ? new ObjectId(eventID) : null;
+        if (!eventObjectId) {
+            return res.status(400).json({ success, error: 'Invalid eventID' });
+        }
 
-		// Define the updated fields object conditionally
-		const updatedFields = {
-			...(newEvent && { 'schedule.$.event': newEvent }),
-			...(newDesc && { 'schedule.$.desc': newDesc }),
-			...(newStart && { 'schedule.$.start': newStart }),
-			...(newEnd && { 'schedule.$.end': newEnd }),
-			...(newDays && { 'schedule.$.days': newDays }),
-		};
+        // Verify if UserID is valid
+        const userIdObj = typeof UserID === 'string' && ObjectId.isValid(UserID) ? new ObjectId(UserID) : parseInt(UserID);
 
-		// Update the specified event within the user's schedule by currentEvent (original event name)
-		const result = await db.collection('Planner').updateOne(
-			{ UserID: userIdObj, 'schedule.event': currentEvent },  // Match by user and original event name
-			{ $set: updatedFields }  // Update only specified fields
-		);
+        // Define the updated fields conditionally
+        const updatedFields = {
+            ...(newEvent && { 'schedule.$.event': newEvent }),
+            ...(newDesc && { 'schedule.$.desc': newDesc }),
+            ...(newStart && { 'schedule.$.start': newStart }),
+            ...(newEnd && { 'schedule.$.end': newEnd }),
+            ...(newDays && { 'schedule.$.days': newDays }),
+        };
 
-		// Check if the operation was successful
-		if (result.modifiedCount > 0) {
-			success = true;
-		} else {
-			error = 'Failed to update event';
-		}
-	} catch (err) {
-		console.error('Error updating event:', err);
-		error = 'Server error: ' + err.message;
-	}
+        // Update the event by eventID
+        const result = await db.collection('Planner').updateOne(
+            { UserID: userIdObj, 'schedule.eventID': eventObjectId }, // Match by UserID and eventID
+            { $set: updatedFields } // Update only specified fields
+        );
 
-	res.status(success ? 200 : 500).json({ success, error });
+        if (result.modifiedCount > 0) {
+            success = true;
+        } else {
+            error = 'Failed to update event or event not found';
+        }
+    } catch (err) {
+        console.error('Error updating event:', err);
+        error = 'Server error: ' + err.message;
+    }
+
+    res.status(success ? 200 : 500).json({ success, error });
 });
 
 
