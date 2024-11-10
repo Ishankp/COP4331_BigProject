@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SchedulerView from '../components/SchedulerView.tsx'; 
-import WeeklyScheduler from '../components/WeeklyScheduler.tsx'; 
+// import WeeklyScheduler from '../components/WeeklyScheduler.tsx'; 
 
 const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
