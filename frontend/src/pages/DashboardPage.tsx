@@ -1,59 +1,7 @@
-// import React, { useState } from 'react';
-// import { useNavigate } from 'react-router-dom';
-
-// const DashboardPage: React.FC = () => {
-//   const navigate = useNavigate();
-//   const [dropdownVisible, setDropdownVisible] = useState(false); // Track dropdown visibility
-
-//   // Retrieve user data from localStorage
-//   const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
-//   const firstInitial = userData?.firstName ? userData.firstName.charAt(0).toUpperCase() : 'P';
-
-//   // Toggle dropdown visibility
-//   const toggleDropdown = () => setDropdownVisible(!dropdownVisible);
-
-//   // Handle logout
-//   const handleLogout = () => {
-//     localStorage.removeItem('user_data'); // Clear user data from localStorage
-//     navigate('/'); // Redirect to login page
-//   };
-
-//   return (
-//     <div>
-//       <div className="navbar">
-//         <h2 className="site-title">TimeLink</h2>
-//         <div className="auth-buttons">
-//           <button className="profile-button" onClick={toggleDropdown}>
-//             {firstInitial}
-//           </button>
-//           {dropdownVisible && (
-//             <div className="dropdown-menu">
-//               <button className="dropdown-item" onClick={handleLogout}>Logout</button>
-//             </div>
-//           )}
-//         </div>
-//       </div>
-
-//       <div className="schedule-content">
-//         <h1 className="page-title">Dashboard</h1>
-//       </div>
-//       <div className="schedule-builder"></div>
-
-//     </div>
-//   );
-// };
-
-// export default DashboardPage;
-
-
-
-
-
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SchedulerView from '../components/SchedulerView.tsx'; 
-// import WeeklyScheduler from '../components/WeeklyScheduler.tsx'; 
+import WeeklyScheduler from '../components/WeeklyScheduler.tsx'; 
 
 const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
@@ -67,7 +15,7 @@ const DashboardPage: React.FC = () => {
 
   useEffect(() => {
     fetchShareKey();
-    fetchFriends();
+    fetchContacts();
   }, []);
 
   const fetchShareKey = async () => {
@@ -80,35 +28,72 @@ const DashboardPage: React.FC = () => {
     }
   };
 
-  const fetchFriends = async () => {
+  const fetchContacts = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/getFriends?UserID=${userData.id}`);
-      const data = await response.json();
-      setFriends(data.friends || []);
+        const response = await fetch('http://localhost:5000/api/getContacts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ UserID: userData.id }), // Send UserID in the body
+        });
+        const data = await response.json();
+        setFriends(data.contacts || []); // Update the state with the contacts list
     } catch (error) {
-      console.error('Error fetching friends:', error);
+        console.error('Error fetching contacts:', error);
     }
-  };
+};
 
-  const handleAddFriend = async () => {
-    try {
+
+
+const handleAddFriend = async () => {
+  try {
       const response = await fetch('http://localhost:5000/api/addContact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ UserID: userData.id, contactID: friendKey }),
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ UserID: userData.id, ShareKey: friendKey }), // Use ShareKey instead of contactID
       });
       const data = await response.json();
       if (data.success) {
-        alert('Friend added successfully!');
-        fetchFriends();
-        setFriendKey('');
+          alert('Friend added successfully!');
+          fetchContacts(); // Refresh the contact list
+          setFriendKey(''); // Clear the input field
       } else {
-        alert(data.error || 'Failed to add friend.');
+          alert(data.error || 'Failed to add friend.');
       }
-    } catch (error) {
+  } catch (error) {
       console.error('Error adding friend:', error);
+  }
+};
+
+const [selectedFriend, setSelectedFriend] = useState<any>(null); // Holds the selected friend's details
+const [modalVisible, setModalVisible] = useState(false); // Toggles the modal visibility
+
+const handleDeleteContact = async () => {
+  if (!selectedFriend || !selectedFriend.ShareKey) {
+    alert('Error: Contact ShareKey not found.');
+    return;
+  }
+
+  try {
+    const response = await fetch('http://localhost:5000/api/deleteContact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ UserID: userData.id, ShareKey: selectedFriend.ShareKey }),
+    });
+
+    const data = await response.json();
+    if (data.success) {
+      alert('Contact deleted successfully!');
+      fetchContacts(); // Refresh the list of friends
+      setModalVisible(false); // Close the modal
+    } else {
+      alert(data.error || 'Failed to delete contact.');
     }
-  };
+  } catch (error) {
+    console.error('Error deleting contact:', error);
+  }
+};
+
+
 
   const copyShareKey = () => {
     navigator.clipboard.writeText(shareKey).then(() => {
@@ -137,14 +122,47 @@ const DashboardPage: React.FC = () => {
           left: 0,
         }}
       >
-        <h3>Friends</h3>
-        <ul style={{ listStyleType: 'none', padding: 0 }}>
-          {friends.map((friend: any) => (
-            <li key={friend.id} style={{ marginBottom: '10px' }}>
-              {friend.name}
-            </li>
-          ))}
-        </ul>
+      <div>
+          <h3>Friends</h3>
+          <ul style={{ listStyleType: 'none', padding: 0 }}>
+              {friends.length > 0 ? (
+                  friends.map((friend: any) => (
+                    <li
+                      key={friend.UserID}
+                      onClick={() => {
+                        console.log('Selected Friend:', friend); // Debug log
+                        setSelectedFriend(friend); // Ensure ShareKey is part of the friend object
+                        setModalVisible(true);
+                      }}
+                      style={{
+                        marginBottom: '10px',
+                        padding: '8px',
+                        borderRadius: '4px',
+                        backgroundColor: '#f7f7f7',
+                        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        transition: 'background-color 0.3s ease',
+                      }}
+                      onMouseEnter={(e) =>
+                        (e.currentTarget.style.backgroundColor = '#e0e0e0')
+                      }
+                      onMouseLeave={(e) =>
+                        (e.currentTarget.style.backgroundColor = '#f7f7f7')
+                      }
+                    >
+                      {friend.Login}
+                  </li>
+                  
+                  ))
+              ) : (
+                  <p style={{ fontStyle: 'italic', color: '#888' }}>No friends found.</p>
+              )}
+          </ul>
+      </div>
+
+
 
         <div>
           <h4>Add Friend</h4>
@@ -223,14 +241,50 @@ const DashboardPage: React.FC = () => {
             )}
           </div>
         </div>
-
-
       </div>
       <div className="schedule-view">
-          <SchedulerView />
+        <SchedulerView />
       </div>
+
+      {modalVisible && selectedFriend && (
+        <div className="modal">
+          <div className="modal-content">
+            <h2>
+              {selectedFriend.firstName} {selectedFriend.lastName}
+            </h2>
+            <p>Username: @{selectedFriend.Login}</p>
+            <p>Share Key: {selectedFriend.ShareKey}</p> {/* Debugging */}
+            <div style={{ display: 'flex', gap: '100px', marginTop: '20px' }}>
+              <button
+                onClick={() => {
+                  alert('Compare schedules feature coming soon!');
+                  setModalVisible(false);
+                }}
+              >
+                Compare Schedules
+              </button>
+              <button onClick={handleDeleteContact}>Delete Contact</button>
+            </div>
+            <button
+              onClick={() => setModalVisible(false)}
+              style={{
+                marginTop: '20px',
+                backgroundColor: 'gray',
+                color: 'white',
+                borderRadius: '4px',
+                padding: '8px',
+                border: 'none',
+              }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
 
 export default DashboardPage;
+
