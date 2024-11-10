@@ -19,7 +19,7 @@ let js = JSON.stringify(obj);
 try
 {
 const response = await
-fetch('http://159.223.150.249:5000/api/addcard',
+fetch('http://wattareyoudoing.us:5000/api/addcard',
 {method:'POST',body:js,headers:{'Content-Type':
 'application/json'}});
 let txt = await response.text();
@@ -46,7 +46,7 @@ let js = JSON.stringify(obj);
 try
 {
 const response = await
-fetch('http://159.223.150.249:5000/api/searchcards',
+fetch('http://wattareyoudoing.us:5000/api/searchcards',
 {method:'POST',body:js,headers:{'Content-Type':
 'application/json'}});
 let txt = await response.text();

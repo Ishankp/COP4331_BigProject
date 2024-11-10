@@ -96,12 +96,18 @@
 import React, { useState } from 'react';
 
 function Login() {
-  const app_name = 'wattareyoudoing.us/';
+  const app_name = 'wattareyoudoing.us';
 
-  function buildPath(route: string): string {
-    return process.env.NODE_ENV !== 'development'
-      ? 'http://' + app_name + ':5000/' + route
-      : 'http://localhost:5000/' + route;
+  function buildPath(route:string) : string
+  {
+    if (process.env.NODE_ENV != 'development')
+    {
+      return 'http://' + app_name + ':5000/' + route;
+    }
+    else
+    {
+      return 'http://localhost:5000/' + route;
+    }
   }
 
   const [message, setMessage] = useState('');
