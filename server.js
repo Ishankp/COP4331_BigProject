@@ -253,48 +253,53 @@ app.put('/api/updateEvent', async (req, res) => {
 });
 
 
-
-//	addContact API
+// addContact
 app.post('/api/addContact', async (req, res) => {
-    let { UserID, contactID } = req.body;
+    const { UserID, ShareKey } = req.body; // Use ShareKey instead of contactID
     let error = '';
     let success = false;
 
     try {
         const db = client.db('SchedulePlanner');
 
-        // Ensure userID and contactID are treated as integers
-        userID = parseInt(UserID, 10);
-        contactID = parseInt(contactID, 10);
+        // Ensure UserID is treated as an integer
+        const userID = parseInt(UserID, 10);
 
-        // Log the parsed userID and contactID to debug if they're correctly parsed
-        console.log("Parsed userID:", userID);
-        console.log("Parsed contactID:", contactID);
-
-        // Check if both user and contact exist
+        // Find the current user
         const user = await db.collection('Users').findOne({ UserID: userID });
-        const contact = await db.collection('Users').findOne({ UserID: contactID });
-
         if (!user) {
             error = 'User not found';
             return res.status(404).json({ success, error });
         }
 
+        // Find the contact using ShareKey
+        const contact = await db.collection('Users').findOne({ ShareKey: ShareKey });
         if (!contact) {
-            error = 'Contact not found';
+            error = 'Contact not found using provided ShareKey';
             return res.status(404).json({ success, error });
         }
 
         // Check if contact is already in the user's contact list
-        if (user.contact_list.includes(contactID)) {
+        if (user.contact_list && user.contact_list.some(c => c.UserID === contact.UserID)) {
             error = 'Contact already added';
             return res.status(400).json({ success, error });
         }
 
-        // Add contactID to user's contact_list
+
+        // Add the contact's details to the user's contact list
         const result = await db.collection('Users').updateOne(
             { UserID: userID },
-            { $push: { contact_list: contactID } }
+            {
+                $push: {
+                    contact_list: {
+                        UserID: contact.UserID,
+                        firstName: contact.FirstName,
+                        lastName: contact.LastName,
+                        Login: contact.Login,
+                        ShareKey: contact.ShareKey,
+                    },
+                },
+            }
         );
 
         if (result.modifiedCount > 0) {
@@ -312,47 +317,77 @@ app.post('/api/addContact', async (req, res) => {
 
 
 
-// deleteContact API
+//getContacts
+app.post('/api/getContacts', async (req, res) => {
+    const { UserID } = req.body;
+    let error = '';
+    let contacts = [];
+
+    try {
+        const db = client.db('SchedulePlanner');
+
+        // Ensure UserID is treated as an integer
+        const userID = parseInt(UserID, 10);
+
+        // Find the user by their UserID
+        const user = await db.collection('Users').findOne({ UserID: userID });
+        if (!user) {
+            error = 'User not found';
+            return res.status(404).json({ error });
+        }
+
+        // Return the user's contact list
+        contacts = user.contact_list || [];
+        res.status(200).json({ contacts });
+    } catch (err) {
+        console.error('Error fetching contacts:', err);
+        error = 'Server error: ' + err.message;
+        res.status(500).json({ error });
+    }
+});
+
+
+
+// deleteContact
 app.post('/api/deleteContact', async (req, res) => {
-    let { UserID, contactID } = req.body;
+    let { UserID, ShareKey } = req.body; // Replace contactID with ShareKey
     let error = '';
     let success = false;
 
     try {
         const db = client.db('SchedulePlanner');
 
-        // Ensure userID and contactID are treated as integers
-        userID = parseInt(UserID, 10);
-        contactID = parseInt(contactID, 10);
+        // Ensure UserID is treated as an integer
+        const userID = parseInt(UserID, 10);
 
-        // Log the parsed userID and contactID for debugging
-        console.log("Parsed userID:", userID);
-        console.log("Parsed contactID:", contactID);
+        // // Log for debugging
+        // console.log("Parsed userID:", userID);
+        // console.log("Provided ShareKey:", ShareKey);
 
-        // Check if both user and contact exist
+        // Find the current user
         const user = await db.collection('Users').findOne({ UserID: userID });
-        const contact = await db.collection('Users').findOne({ UserID: contactID });
-
         if (!user) {
             error = 'User not found';
             return res.status(404).json({ success, error });
         }
 
+        // Find the contact using ShareKey
+        const contact = await db.collection('Users').findOne({ ShareKey: ShareKey });
         if (!contact) {
-            error = 'Contact not found';
+            error = 'Contact not found using provided ShareKey';
             return res.status(404).json({ success, error });
         }
 
-        // Check if contact is actually in the user's contact list
-        if (!user.contact_list.includes(contactID)) {
+        // Check if the contact is in the user's contact list
+        if (!user.contact_list.some(c => c.UserID === contact.UserID)) {
             error = 'Contact not found in user\'s contact list';
             return res.status(400).json({ success, error });
         }
 
-        // Remove contactID from user's contact_list
+        // Remove the contact from the user's contact_list
         const result = await db.collection('Users').updateOne(
             { UserID: userID },
-            { $pull: { contact_list: contactID } }
+            { $pull: { contact_list: { UserID: contact.UserID } } } // Match the object with UserID
         );
 
         if (result.modifiedCount > 0) {
@@ -367,6 +402,7 @@ app.post('/api/deleteContact', async (req, res) => {
 
     res.status(success ? 200 : 500).json({ success, error });
 });
+
 
 
 
