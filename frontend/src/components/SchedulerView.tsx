@@ -126,6 +126,14 @@ const SchedulerView: React.FC = () => {
   const secondaryColor = '#ff6b6b';
   const navigate = useNavigate(); // Initialize navigate function
 
+  const app_name = 'wattareyoudoing.us';
+
+  function buildPath(route: string): string {
+    return process.env.NODE_ENV !== 'development'
+      ? 'http://' + app_name + ':5000/' + route
+      : 'http://localhost:5000/' + route;
+  }
+
   const eventPropGetter = (/*event: FrontendEvent*/) => ({
     style: {
       backgroundColor: secondaryColor,
@@ -147,7 +155,7 @@ const SchedulerView: React.FC = () => {
 
   const loadEvents = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/viewEvent', {
+      const response = await fetch(buildPath('api/viewEvent'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

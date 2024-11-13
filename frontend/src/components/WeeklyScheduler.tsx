@@ -74,9 +74,18 @@ const WeeklyScheduler: React.FC = () => {
     loadEvents();
   }, []);
 
+  const app_name = 'wattareyoudoing.us';
+
+  function buildPath(route: string): string {
+    return process.env.NODE_ENV !== 'development'
+      ? 'http://' + app_name + ':5000/' + route
+      : 'http://localhost:5000/' + route;
+  }
+
+
   const loadEvents = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/viewEvent', {
+      const response = await fetch(buildPath('api/viewEvent'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -148,7 +157,7 @@ const WeeklyScheduler: React.FC = () => {
 
   const saveEventToBackend = async (event: BackendEvent) => {
     try {
-      const response = await fetch('http://localhost:5000/api/addEvent', {
+      const response = await fetch(buildPath('api/addEvent'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -166,7 +175,7 @@ const WeeklyScheduler: React.FC = () => {
 
   const updateEventInBackend = async (event: UpdateEventPayload) => {
     try {
-      const response = await fetch('http://localhost:5000/api/updateEvent', {
+      const response = await fetch(buildPath('api/updateEvent'), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -189,7 +198,7 @@ const WeeklyScheduler: React.FC = () => {
     if (!confirmed) return;
 
     try {
-      const response = await fetch('http://localhost:5000/api/deleteEvent', {
+      const response = await fetch(buildPath('api/deleteEvent'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
