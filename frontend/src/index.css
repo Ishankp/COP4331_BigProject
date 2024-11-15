@@ -490,6 +490,50 @@ button:focus-visible {
   /* overflow-y: auto; */
 }
 
+.schedule-compare {
+  width: 100%;
+  max-width: 100vw;
+  padding: 1%;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  background-color: white; 
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-left: auto; /* Automatically pushes the element to the right */
+  margin-left: 0%;
+  margin-top: 3%;
+  max-height: 600px; /* Add a maximum height to limit its vertical size */
+  /* overflow-y: auto; */
+}
+
+
+/* Container for the back button */
+.back-button-container {
+  position: absolute; /* Fix position */
+  top: 80px; /* Adjust to be below the navbar */
+  left: 35px; /* Align to the left */
+  z-index: 100; /* Ensure it appears above other elements */
+}
+
+/* Styles for the back button */
+.back-button {
+  background-color: #FF6B6B;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease;
+}
+
+.back-button:hover {
+  background-color: #e05b5b;
+}
+
+
+
 @import '@fullcalendar/core/main.css';
 @import '@fullcalendar/daygrid/main.css';
 
