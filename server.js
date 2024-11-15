@@ -436,6 +436,69 @@ app.post('/api/viewEvent', async (req, res) => {
 
 
 
+// getCombinedEvents
+app.post('/api/getCombinedEvents', async (req, res) => {
+    const { UserID, FriendID } = req.body;
+  
+    try {
+      if (!UserID || !FriendID) {
+        return res.status(400).json({ error: 'Both UserID and FriendID are required.' });
+      }
+  
+      const db = client.db('SchedulePlanner');
+  
+      // Ensure UserID and FriendID are integers
+      const userID = parseInt(UserID, 10);
+      const friendID = parseInt(FriendID, 10);
+  
+      // Fetch schedules for both users
+      const user = await db.collection('Planner').findOne({ UserID: userID });
+      const friend = await db.collection('Planner').findOne({ UserID: friendID });
+  
+      if (!user || !user.schedule) {
+        return res.status(404).json({ error: 'User schedule not found.' });
+      }
+  
+      if (!friend || !friend.schedule) {
+        return res.status(404).json({ error: 'Friend schedule not found.' });
+      }
+  
+      // Combine the schedules with UserID included
+      const combinedEvents = [
+        ...user.schedule.map(event => ({
+          eventID: event.eventID,
+          event: event.event,
+          desc: event.desc || '',
+          start: event.start,
+          end: event.end,
+          days: event.days || [],
+          userID: user.UserID, // Add UserID to identify the owner of the event
+        })),
+        ...friend.schedule.map(event => ({
+          eventID: event.eventID,
+          event: event.event,
+          desc: event.desc || '',
+          start: event.start,
+          end: event.end,
+          days: event.days || [],
+          userID: friend.UserID, // Add UserID to identify the owner of the event
+        })),
+      ];
+  
+      // Return the combined events
+      res.json({ events: combinedEvents });
+    } catch (error) {
+      console.error('Error fetching combined events:', error);
+      res.status(500).json({ error: 'Error fetching combined events' });
+    }
+  });
+  
+  
+  
+  
+  
+  
+
 //	Email Lost Password API (Work in progress)
 
 
