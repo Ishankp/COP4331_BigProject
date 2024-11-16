@@ -8,24 +8,47 @@ import {
     Typography,
     TextField
   } from '@mui/material';
-
+import buildPath from "../helpers/HelperFunctions";
 
 interface VerificationDialogProps {
     open: boolean;
+    login: string;
+    password: string;
     onClose: () => void;
-    onVerify: (Token: string) => boolean; // Function to check if the Token is correct
+    onVerify: (Token: string) => boolean;
 }
 
-const VerifyDialog: React.FC<VerificationDialogProps> = ({open, onClose, onVerify}) => {
+const VerifyDialog: React.FC<VerificationDialogProps> = ({open, login, password, onClose, onVerify}) => {
     const [Token, setToken] = useState('');
     const [message, setMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
 
-    const handleVerify = () => {
+    const handleVerify = async () => {
         const doesTokenMatch = onVerify(Token);
         if (doesTokenMatch) {
-            setMessage('Account Verified!'); 
-            setErrorMessage('');
+            const obj = { login: login, password: password};
+            const js = JSON.stringify(obj);
+
+            try {
+                const response = await fetch(buildPath('api/verify_user'), {
+                    method: 'POST',
+                    body: js,
+                    headers: { 'Content-Type': 'application/json' },
+                });
+
+                const res = await response.json();
+                if (response.ok && res.success) {
+                    setMessage('Account Verified!'); 
+                    setErrorMessage('');
+                }
+            }
+            catch (error) {
+                console.error('Error:', error);
+                setMessage('Verification failed. Please try again later.');
+            }   
+            finally {
+                window.location.href = '/cards';
+            }
         }
         else {
             setErrorMessage('Token does not match: Resend Token');

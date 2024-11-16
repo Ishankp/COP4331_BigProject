@@ -53,6 +53,8 @@ app.post('/api/login', async (req, res, next) => {
                 id: results.UserID,            // Ensure `UserID` matches exactly with MongoDB field name
                 firstName: results.FirstName, 
                 lastName: results.LastName, 
+                token: results.token,
+                isVerified: results.isVerified,
                 error: '' 
             };
             res.status(200).json(ret);
@@ -70,7 +72,7 @@ app.post('/api/login', async (req, res, next) => {
 //	Register API
 const { ObjectId } = require('mongodb');  // Ensure ObjectId is imported
 app.post('/api/register', async (req, res) => {
-	const { FirstName, LastName, Login, Password, email, ShareKey, isVerified, Token } = req.body;
+	const { FirstName, LastName, Login, Password, email, ShareKey, isVerified, token } = req.body;
 	let error = '';
 	let success = false;
   
@@ -99,7 +101,7 @@ app.post('/api/register', async (req, res) => {
 		ShareKey: ShareKey || null,
 		contact_list: [],
         isVerified,
-        Token
+        token
 	  };
   
 	  const result = await db.collection('Users').insertOne(newUser);
@@ -122,6 +124,33 @@ app.post('/api/register', async (req, res) => {
 	res.status(success ? 200 : 500).json({ success, error });
 });
 
+app.post('/api/verify_user', async (req, res, next) => {
+    // incoming: login, password
+    // outgoing: isVerified
+    const { login, password } = req.body;
+    let error = '';
+    let success = false;
+
+    const db = client.db('SchedulePlanner');
+    try {
+        const updatedVerification = {...{isVerified: true}};
+        const results = await db.collection('Users').updateOne(
+            { Login: login, Password: password },
+            { $set: updatedVerification}
+        );
+        if (results.modifiedCount > 0) {
+            success = true;
+        }
+        else {
+            error = 'Server failed to verify user';
+        }
+    } catch (err) {
+        console.error('Error during user verification', err);
+        res.status(500).json({ id: -1, firstName: '', lastName: '', error: 'Server error' });
+    }
+
+    res.status(success ? 200 : 500).json({ success, error })
+});
 
 
 //	addEvent API

@@ -24,12 +24,13 @@ const Register: React.FC = () => {
   const [shareKey, setShareKey] = useState(''); // Optional field
   const [token, setToken] = useState('');
   const [verifyDialogOpen, setVerifyDialogOpen] = useState(false);
+
   async function doRegister(event: React.FormEvent) {
     event.preventDefault();
     const genToken = await generateToken();
 
     setToken(genToken);
-    const newUser = { FirstName: firstName, LastName: lastName, Login: login, Password: password, email, ShareKey: shareKey, isVerified: false, Token:genToken };
+    const newUser = { FirstName: firstName, LastName: lastName, Login: login, Password: password, email, ShareKey: shareKey, isVerified: false, token:genToken };
     const userJson = JSON.stringify(newUser);
 
     try {
@@ -119,6 +120,8 @@ const Register: React.FC = () => {
         {message && <p>{message}</p>}
       </div>
       <VerifyDialog
+        login={login}
+        password={password}
         open={verifyDialogOpen}
         onClose={() => {setVerifyDialogOpen(false)}}
         onVerify={handleVerifyToken}
