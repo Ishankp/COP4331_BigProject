@@ -2,6 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SchedulerView from '../components/SchedulerView.tsx'; 
 
+
+const app_name = 'wattareyoudoing.us';
+
+  function buildPath(route: string): string {
+    return process.env.NODE_ENV !== 'development'
+      ? 'http://' + app_name + ':5000/' + route
+      : 'http://localhost:5000/' + route;
+  }
+
 const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
   const [dropdownVisible, setDropdownVisible] = useState(false);
@@ -19,7 +28,7 @@ const DashboardPage: React.FC = () => {
 
   const fetchShareKey = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/getShareKey?UserID=${userData.id}`);
+      const response = await fetch(buildPath(`api/getShareKey?UserID=${userData.id}`));
       const data = await response.json();
       setShareKey(data.shareKey || 'No Key');
     } catch (error) {
@@ -29,7 +38,7 @@ const DashboardPage: React.FC = () => {
 
   const fetchContacts = async () => {
     try {
-        const response = await fetch('http://localhost:5000/api/getContacts', {
+        const response = await fetch(buildPath('api/getContacts'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ UserID: userData.id }), // Send UserID in the body
@@ -45,7 +54,7 @@ const DashboardPage: React.FC = () => {
 
 const handleAddFriend = async () => {
   try {
-      const response = await fetch('http://localhost:5000/api/addContact', {
+      const response = await fetch(buildPath('api/addContact'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ UserID: userData.id, ShareKey: friendKey }), // Use ShareKey instead of contactID
@@ -73,7 +82,7 @@ const handleDeleteContact = async () => {
   }
 
   try {
-    const response = await fetch('http://localhost:5000/api/deleteContact', {
+    const response = await fetch(buildPath('api/deleteContact'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ UserID: userData.id, ShareKey: selectedFriend.ShareKey }),
