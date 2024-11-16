@@ -50,7 +50,7 @@ const VerifyDialog: React.FC<VerificationDialogProps> = ({open, login, password,
                 setMessage('Verification failed. Please try again later.');
             }   
             finally {
-                window.location.href = '/cards';
+                window.location.href = '/schedulebuilder';
             }
         }
         else {
