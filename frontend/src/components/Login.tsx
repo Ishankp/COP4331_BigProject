@@ -95,13 +95,14 @@
 
 import React, { useState } from 'react';
 import VerifyDialog from './VerifyDialog';
-import buildPath from '../helpers/HelperFunctions';
+import {buildPath} from '../helpers/HelperFunctions';
 
 function Login() {
 
   const [message, setMessage] = useState('');
   const [loginName, setLoginName] = useState('');
   const [loginPassword, setPassword] = useState('');
+  const [userEmail, setUserEmail] = useState(''); 
   const [verifyDialogOpen, setVerifyDialogOpen] = useState(false);
   const [token, setToken] = useState('');
 
@@ -129,8 +130,10 @@ function Login() {
           id: String(res.id),
           isVerified: res.isVerified,
           token: res.token,
+          email: res.email
         };
         setToken(user.token);
+        setUserEmail(user.email);
         localStorage.setItem('user_data', JSON.stringify(user));
         if (user.isVerified) {
           setMessage('');
@@ -147,8 +150,6 @@ function Login() {
   }
 
   const handleVerifyToken = (enteredToken: string): boolean => {
-    console.log(enteredToken);
-    console.log(token);
     return enteredToken === token;
   };
 
@@ -181,6 +182,7 @@ function Login() {
         onVerify={handleVerifyToken}
         login={loginName}
         password={loginPassword}
+        email={userEmail} 
       />
     </div>
   );

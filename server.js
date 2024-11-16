@@ -55,7 +55,8 @@ app.post('/api/login', async (req, res, next) => {
                 lastName: results.LastName, 
                 token: results.token,
                 isVerified: results.isVerified,
-                error: '' 
+                error: '' ,
+                email: results.email
             };
             res.status(200).json(ret);
         } else {

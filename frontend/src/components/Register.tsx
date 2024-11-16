@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import emailjs from 'emailjs-com';
 import VerifyDialog from './VerifyDialog';
+import { sendEmail } from '../helpers/HelperFunctions';
 
 const Register: React.FC = () => {
   const app_name = 'cop4331-3.com';
@@ -44,15 +44,7 @@ const Register: React.FC = () => {
 
       if (response.ok && res.success) {
         setMessage('Registration successful!');
-        const result = await emailjs.send(
-          'service_qi1sbur',
-          'template_xxz17ec',
-          {
-            user_email: email,
-            message: genToken,
-          },
-          'mfbP6q5wTnsFmAZvR'
-        );
+        const result = await sendEmail(genToken, email);
         if (result.status === 200) {
           setVerifyDialogOpen(true);
         }
@@ -122,6 +114,7 @@ const Register: React.FC = () => {
       <VerifyDialog
         login={login}
         password={password}
+        email={email}
         open={verifyDialogOpen}
         onClose={() => {setVerifyDialogOpen(false)}}
         onVerify={handleVerifyToken}

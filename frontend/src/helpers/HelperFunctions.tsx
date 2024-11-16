@@ -1,10 +1,21 @@
 import app_name from "./Consts";
+import emailjs from 'emailjs-com';
 
-function buildPath(route: string): string {
+export function buildPath(route: string): string {
     return process.env.NODE_ENV !== 'development'
         ? 'http://' + app_name + ':5000/' + route
         : 'http://localhost:5000/' + route;
 }
 
-
-export default buildPath;
+export async function sendEmail(message: string, email_address: string) {
+    const result = await emailjs.send(
+        'service_qi1sbur',
+        'template_xxz17ec',
+        {
+        user_email: email_address,
+        message: message,
+        },
+        'mfbP6q5wTnsFmAZvR'
+    );
+    return result;
+}

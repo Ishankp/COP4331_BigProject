@@ -6,25 +6,28 @@ import {
     DialogActions,
     Button,
     Typography,
-    TextField
+    TextField,
+    Link
   } from '@mui/material';
-import buildPath from "../helpers/HelperFunctions";
+import { buildPath, sendEmail } from "../helpers/HelperFunctions";
 
 interface VerificationDialogProps {
     open: boolean;
     login: string;
     password: string;
+    email: string;
     onClose: () => void;
-    onVerify: (Token: string) => boolean;
+    onVerify: (token: string) => boolean;
 }
 
-const VerifyDialog: React.FC<VerificationDialogProps> = ({open, login, password, onClose, onVerify}) => {
-    const [Token, setToken] = useState('');
+const VerifyDialog: React.FC<VerificationDialogProps> = ({open, login, password, email, onClose, onVerify}) => {
+    const [token, setToken] = useState('');
     const [message, setMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
 
     const handleVerify = async () => {
-        const doesTokenMatch = onVerify(Token);
+        const doesTokenMatch = onVerify(token);
+        console.log(email);
         if (doesTokenMatch) {
             const obj = { login: login, password: password};
             const js = JSON.stringify(obj);
@@ -51,7 +54,7 @@ const VerifyDialog: React.FC<VerificationDialogProps> = ({open, login, password,
             }
         }
         else {
-            setErrorMessage('Token does not match: Resend Token');
+            setErrorMessage('Token does not match');
             setMessage('');
         }
     };
@@ -78,10 +81,24 @@ const VerifyDialog: React.FC<VerificationDialogProps> = ({open, login, password,
                 variant="outlined"
                 fullWidth
                 margin="normal"
-                value={Token}
+                value={token}
                 onChange={(e) => setToken(e.target.value)}
                 error={!!errorMessage}
-                helperText={errorMessage || ' '}
+                helperText={
+                    errorMessage && 
+                    <span>
+                        <Typography variant="body2">
+                            {errorMessage}
+                        </Typography>
+                        <Link
+                        component="button"
+                        variant="body2"
+                        onClick={() => {sendEmail(token, email)}}
+                        >
+                        Resend Code
+                        </Link>
+                    </span>
+                    || ' '}
               />
               {message && (
                 <Typography color="success" variant="body1">
