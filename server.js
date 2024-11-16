@@ -1,4 +1,3 @@
-
 const MongoClient = require('mongodb').MongoClient;
 
 // Correctly URL-encoded password
@@ -153,8 +152,7 @@ app.post('/api/verify_user', async (req, res, next) => {
     res.status(success ? 200 : 500).json({ success, error })
 });
 
-
-//	addEvent API
+//  addEvent API
 app.post('/api/addEvent', async (req, res) => {
     const { UserID, event, desc, start, end, days } = req.body;
     let error = '';
@@ -163,35 +161,28 @@ app.post('/api/addEvent', async (req, res) => {
     try {
         const db = client.db('SchedulePlanner');
 
-        // Verify if UserID is valid and convert it as needed
+        // Verify if UserID is valid
         const userIdObj = typeof UserID === 'string' && ObjectId.isValid(UserID) ? new ObjectId(UserID) : parseInt(UserID);
 
-        // Check if an event with the same name already exists in the user's schedule
-        const existingEvent = await db.collection('Planner').findOne(
-            { UserID: userIdObj, 'schedule.event': event }
-        );
+        // Create eventID using ObjectId or other method
+        const eventID = new ObjectId(); // Unique identifier for the event
 
-        if (existingEvent) {
-            error = 'Event with this name already exists';
-            return res.status(400).json({ success, error });
-        }
-
-        // Define the new event object
+        // Define the new event object with eventID
         const newEvent = {
+            eventID, // Include the eventID field
             event,
             desc,
             start,
             end,
-            days  // Array of integers representing days (0 for Sunday, 6 for Saturday)
+            days
         };
 
-        // Update the user's schedule array in the Planner collection
+        // Update the user's schedule in the Planner collection
         const result = await db.collection('Planner').updateOne(
-            { UserID: userIdObj },  // Match the user by ID
-            { $push: { schedule: newEvent } }  // Add to the user's schedule array
+            { UserID: userIdObj }, // Match by UserID
+            { $push: { schedule: newEvent } } // Add event to schedule array
         );
 
-        // Check if the operation was successful
         if (result.modifiedCount > 0) {
             success = true;
         } else {
@@ -207,124 +198,140 @@ app.post('/api/addEvent', async (req, res) => {
 
 
 
+
 //	deleteEvent API
 app.post('/api/deleteEvent', async (req, res) => {
-	const { UserID, event } = req.body; // Only require UserID and event title
-	let error = '';
-	let success = false;
-
-	try {
-		const db = client.db('SchedulePlanner');
-
-		// Verify if UserID is valid and convert it as needed
-		const userIdObj = typeof UserID === 'string' && ObjectId.isValid(UserID) ? new ObjectId(UserID) : parseInt(UserID);
-
-		// Remove the specified event from the user's schedule array by event title
-		const result = await db.collection('Planner').updateOne(
-			{ UserID: userIdObj },  // Match the user by ID
-			{ $pull: { schedule: { event } } }  // Remove by matching event title only
-		);
-
-		// Check if the operation was successful
-		if (result.modifiedCount > 0) {
-			success = true;
-		} else {
-			error = 'Failed to delete event';
-		}
-	} catch (err) {
-		console.error('Error deleting event:', err);
-		error = 'Server error: ' + err.message;
-	}
-
-	res.status(success ? 200 : 500).json({ success, error });
-});
-
-
-
-// updateEvent API
-app.put('/api/updateEvent', async (req, res) => {
-	const { UserID, currentEvent, newEvent, newDesc, newStart, newEnd, newDays } = req.body;
-	let error = '';
-	let success = false;
-
-	try {
-		const db = client.db('SchedulePlanner');
-
-		// Verify if UserID is valid and convert it as needed
-		const userIdObj = typeof UserID === 'string' && ObjectId.isValid(UserID) ? new ObjectId(UserID) : parseInt(UserID);
-
-		// Define the updated fields object conditionally
-		const updatedFields = {
-			...(newEvent && { 'schedule.$.event': newEvent }),
-			...(newDesc && { 'schedule.$.desc': newDesc }),
-			...(newStart && { 'schedule.$.start': newStart }),
-			...(newEnd && { 'schedule.$.end': newEnd }),
-			...(newDays && { 'schedule.$.days': newDays }),
-		};
-
-		// Update the specified event within the user's schedule by currentEvent (original event name)
-		const result = await db.collection('Planner').updateOne(
-			{ UserID: userIdObj, 'schedule.event': currentEvent },  // Match by user and original event name
-			{ $set: updatedFields }  // Update only specified fields
-		);
-
-		// Check if the operation was successful
-		if (result.modifiedCount > 0) {
-			success = true;
-		} else {
-			error = 'Failed to update event';
-		}
-	} catch (err) {
-		console.error('Error updating event:', err);
-		error = 'Server error: ' + err.message;
-	}
-
-	res.status(success ? 200 : 500).json({ success, error });
-});
-
-
-
-//	addContact API
-app.post('/api/addContact', async (req, res) => {
-    let { UserID, contactID } = req.body;
+    const { UserID, eventID } = req.body; // Expect eventID as ObjectId in the request
     let error = '';
     let success = false;
 
     try {
         const db = client.db('SchedulePlanner');
 
-        // Ensure userID and contactID are treated as integers
-        userID = parseInt(UserID, 10);
-        contactID = parseInt(contactID, 10);
+        // Ensure eventID is a valid ObjectId
+        const eventObjectId = ObjectId.isValid(eventID) ? new ObjectId(eventID) : null;
+        if (!eventObjectId) {
+            return res.status(400).json({ success, error: 'Invalid eventID' });
+        }
 
-        // Log the parsed userID and contactID to debug if they're correctly parsed
-        console.log("Parsed userID:", userID);
-        console.log("Parsed contactID:", contactID);
+        // Verify if UserID is valid
+        const userIdObj = typeof UserID === 'string' && ObjectId.isValid(UserID) ? new ObjectId(UserID) : parseInt(UserID);
 
-        // Check if both user and contact exist
+        // Remove event by eventID from the user's schedule
+        const result = await db.collection('Planner').updateOne(
+            { UserID: userIdObj }, // Match by UserID
+            { $pull: { schedule: { eventID: eventObjectId } } } // Remove event by eventID
+        );
+
+        if (result.modifiedCount > 0) {
+            success = true;
+        } else {
+            error = 'Failed to delete event or event not found';
+        }
+    } catch (err) {
+        console.error('Error deleting event:', err);
+        error = 'Server error: ' + err.message;
+    }
+
+    res.status(success ? 200 : 500).json({ success, error });
+});
+
+
+
+// updateEvent API
+app.put('/api/updateEvent', async (req, res) => {
+    const { UserID, eventID, newEvent, newDesc, newStart, newEnd, newDays } = req.body;
+    let error = '';
+    let success = false;
+
+    try {
+        const db = client.db('SchedulePlanner');
+
+        // Ensure eventID is a valid ObjectId
+        const eventObjectId = ObjectId.isValid(eventID) ? new ObjectId(eventID) : null;
+        if (!eventObjectId) {
+            return res.status(400).json({ success, error: 'Invalid eventID' });
+        }
+
+        // Verify if UserID is valid
+        const userIdObj = typeof UserID === 'string' && ObjectId.isValid(UserID) ? new ObjectId(UserID) : parseInt(UserID);
+
+        // Define the updated fields conditionally
+        const updatedFields = {
+            ...(newEvent && { 'schedule.$.event': newEvent }),
+            ...(newDesc && { 'schedule.$.desc': newDesc }),
+            ...(newStart && { 'schedule.$.start': newStart }),
+            ...(newEnd && { 'schedule.$.end': newEnd }),
+            ...(newDays && { 'schedule.$.days': newDays }),
+        };
+
+        // Update the event by eventID
+        const result = await db.collection('Planner').updateOne(
+            { UserID: userIdObj, 'schedule.eventID': eventObjectId }, // Match by UserID and eventID
+            { $set: updatedFields } // Update only specified fields
+        );
+
+        if (result.modifiedCount > 0) {
+            success = true;
+        } else {
+            error = 'Failed to update event or event not found';
+        }
+    } catch (err) {
+        console.error('Error updating event:', err);
+        error = 'Server error: ' + err.message;
+    }
+
+    res.status(success ? 200 : 500).json({ success, error });
+});
+
+
+// addContact
+app.post('/api/addContact', async (req, res) => {
+    const { UserID, ShareKey } = req.body; // Use ShareKey instead of contactID
+    let error = '';
+    let success = false;
+
+    try {
+        const db = client.db('SchedulePlanner');
+
+        // Ensure UserID is treated as an integer
+        const userID = parseInt(UserID, 10);
+
+        // Find the current user
         const user = await db.collection('Users').findOne({ UserID: userID });
-        const contact = await db.collection('Users').findOne({ UserID: contactID });
-
         if (!user) {
             error = 'User not found';
             return res.status(404).json({ success, error });
         }
 
+        // Find the contact using ShareKey
+        const contact = await db.collection('Users').findOne({ ShareKey: ShareKey });
         if (!contact) {
-            error = 'Contact not found';
+            error = 'Contact not found using provided ShareKey';
             return res.status(404).json({ success, error });
         }
 
         // Check if contact is already in the user's contact list
-        if (user.contact_list.includes(contactID)) {
+        if (user.contact_list && user.contact_list.some(c => c.UserID === contact.UserID)) {
             error = 'Contact already added';
             return res.status(400).json({ success, error });
         }
 
-        // Add contactID to user's contact_list
+
+        // Add the contact's details to the user's contact list
         const result = await db.collection('Users').updateOne(
             { UserID: userID },
-            { $push: { contact_list: contactID } }
+            {
+                $push: {
+                    contact_list: {
+                        UserID: contact.UserID,
+                        firstName: contact.FirstName,
+                        lastName: contact.LastName,
+                        Login: contact.Login,
+                        ShareKey: contact.ShareKey,
+                    },
+                },
+            }
         );
 
         if (result.modifiedCount > 0) {
@@ -342,47 +349,77 @@ app.post('/api/addContact', async (req, res) => {
 
 
 
-// deleteContact API
+//getContacts
+app.post('/api/getContacts', async (req, res) => {
+    const { UserID } = req.body;
+    let error = '';
+    let contacts = [];
+
+    try {
+        const db = client.db('SchedulePlanner');
+
+        // Ensure UserID is treated as an integer
+        const userID = parseInt(UserID, 10);
+
+        // Find the user by their UserID
+        const user = await db.collection('Users').findOne({ UserID: userID });
+        if (!user) {
+            error = 'User not found';
+            return res.status(404).json({ error });
+        }
+
+        // Return the user's contact list
+        contacts = user.contact_list || [];
+        res.status(200).json({ contacts });
+    } catch (err) {
+        console.error('Error fetching contacts:', err);
+        error = 'Server error: ' + err.message;
+        res.status(500).json({ error });
+    }
+});
+
+
+
+// deleteContact
 app.post('/api/deleteContact', async (req, res) => {
-    let { UserID, contactID } = req.body;
+    let { UserID, ShareKey } = req.body; // Replace contactID with ShareKey
     let error = '';
     let success = false;
 
     try {
         const db = client.db('SchedulePlanner');
 
-        // Ensure userID and contactID are treated as integers
-        userID = parseInt(UserID, 10);
-        contactID = parseInt(contactID, 10);
+        // Ensure UserID is treated as an integer
+        const userID = parseInt(UserID, 10);
 
-        // Log the parsed userID and contactID for debugging
-        console.log("Parsed userID:", userID);
-        console.log("Parsed contactID:", contactID);
+        // // Log for debugging
+        // console.log("Parsed userID:", userID);
+        // console.log("Provided ShareKey:", ShareKey);
 
-        // Check if both user and contact exist
+        // Find the current user
         const user = await db.collection('Users').findOne({ UserID: userID });
-        const contact = await db.collection('Users').findOne({ UserID: contactID });
-
         if (!user) {
             error = 'User not found';
             return res.status(404).json({ success, error });
         }
 
+        // Find the contact using ShareKey
+        const contact = await db.collection('Users').findOne({ ShareKey: ShareKey });
         if (!contact) {
-            error = 'Contact not found';
+            error = 'Contact not found using provided ShareKey';
             return res.status(404).json({ success, error });
         }
 
-        // Check if contact is actually in the user's contact list
-        if (!user.contact_list.includes(contactID)) {
+        // Check if the contact is in the user's contact list
+        if (!user.contact_list.some(c => c.UserID === contact.UserID)) {
             error = 'Contact not found in user\'s contact list';
             return res.status(400).json({ success, error });
         }
 
-        // Remove contactID from user's contact_list
+        // Remove the contact from the user's contact_list
         const result = await db.collection('Users').updateOne(
             { UserID: userID },
-            { $pull: { contact_list: contactID } }
+            { $pull: { contact_list: { UserID: contact.UserID } } } // Match the object with UserID
         );
 
         if (result.modifiedCount > 0) {
@@ -397,6 +434,7 @@ app.post('/api/deleteContact', async (req, res) => {
 
     res.status(success ? 200 : 500).json({ success, error });
 });
+
 
 
 
@@ -429,6 +467,69 @@ app.post('/api/viewEvent', async (req, res) => {
 });
 
 
+
+// getCombinedEvents
+app.post('/api/getCombinedEvents', async (req, res) => {
+    const { UserID, FriendID } = req.body;
+  
+    try {
+      if (!UserID || !FriendID) {
+        return res.status(400).json({ error: 'Both UserID and FriendID are required.' });
+      }
+  
+      const db = client.db('SchedulePlanner');
+  
+      // Ensure UserID and FriendID are integers
+      const userID = parseInt(UserID, 10);
+      const friendID = parseInt(FriendID, 10);
+  
+      // Fetch schedules for both users
+      const user = await db.collection('Planner').findOne({ UserID: userID });
+      const friend = await db.collection('Planner').findOne({ UserID: friendID });
+  
+      if (!user || !user.schedule) {
+        return res.status(404).json({ error: 'User schedule not found.' });
+      }
+  
+      if (!friend || !friend.schedule) {
+        return res.status(404).json({ error: 'Friend schedule not found.' });
+      }
+  
+      // Combine the schedules with UserID included
+      const combinedEvents = [
+        ...user.schedule.map(event => ({
+          eventID: event.eventID,
+          event: event.event,
+          desc: event.desc || '',
+          start: event.start,
+          end: event.end,
+          days: event.days || [],
+          userID: user.UserID, // Add UserID to identify the owner of the event
+        })),
+        ...friend.schedule.map(event => ({
+          eventID: event.eventID,
+          event: event.event,
+          desc: event.desc || '',
+          start: event.start,
+          end: event.end,
+          days: event.days || [],
+          userID: friend.UserID, // Add UserID to identify the owner of the event
+        })),
+      ];
+  
+      // Return the combined events
+      res.json({ events: combinedEvents });
+    } catch (error) {
+      console.error('Error fetching combined events:', error);
+      res.status(500).json({ error: 'Error fetching combined events' });
+    }
+  });
+  
+  
+  
+  
+  
+  
 
 //	Email Lost Password API (Work in progress)
 
