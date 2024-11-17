@@ -183,6 +183,7 @@ function Login() {
         login={loginName}
         password={loginPassword}
         email={userEmail} 
+        verifyToken={token}
       />
     </div>
   );

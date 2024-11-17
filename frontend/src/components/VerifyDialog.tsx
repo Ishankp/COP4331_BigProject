@@ -16,11 +16,12 @@ interface VerificationDialogProps {
     login: string;
     password: string;
     email: string;
+    verifyToken: string;
     onClose: () => void;
     onVerify: (token: string) => boolean;
 }
 
-const VerifyDialog: React.FC<VerificationDialogProps> = ({open, login, password, email, onClose, onVerify}) => {
+const VerifyDialog: React.FC<VerificationDialogProps> = ({open, login, password, email, verifyToken, onClose, onVerify}) => {
     const [token, setToken] = useState('');
     const [message, setMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
@@ -88,12 +89,12 @@ const VerifyDialog: React.FC<VerificationDialogProps> = ({open, login, password,
                     errorMessage && 
                     <span>
                         <Typography variant="body2">
-                            {errorMessage}
+                            {errorMessage}:
                         </Typography>
                         <Link
                         component="button"
                         variant="body2"
-                        onClick={() => {sendEmail(token, email)}}
+                        onClick={() => {sendEmail(verifyToken, email)}}
                         >
                         Resend Code
                         </Link>

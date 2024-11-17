@@ -115,6 +115,7 @@ const Register: React.FC = () => {
         login={login}
         password={password}
         email={email}
+        verifyToken={token}
         open={verifyDialogOpen}
         onClose={() => {setVerifyDialogOpen(false)}}
         onVerify={handleVerifyToken}
