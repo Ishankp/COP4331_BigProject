@@ -94,25 +94,17 @@
 
 
 import React, { useState } from 'react';
+import VerifyDialog from './VerifyDialog';
+import {buildPath} from '../helpers/HelperFunctions';
 
 function Login() {
-  const app_name = 'wattareyoudoing.us';
-
-  function buildPath(route:string) : string
-  {
-    if (process.env.NODE_ENV != 'development')
-    {
-      return 'http://' + app_name + ':5000/' + route;
-    }
-    else
-    {
-      return 'http://localhost:5000/' + route;
-    }
-  }
 
   const [message, setMessage] = useState('');
   const [loginName, setLoginName] = useState('');
   const [loginPassword, setPassword] = useState('');
+  const [userEmail, setUserEmail] = useState(''); 
+  const [verifyDialogOpen, setVerifyDialogOpen] = useState(false);
+  const [token, setToken] = useState('');
 
   async function doLogin(event: React.FormEvent) : Promise<void> {
     event.preventDefault();
@@ -135,12 +127,21 @@ function Login() {
         const user = { 
           firstName: res.firstName, 
           lastName: res.lastName, 
-          id: String(res.id) 
+          id: String(res.id),
+          isVerified: res.isVerified,
+          token: res.token,
+          email: res.email
         };
+        setToken(user.token);
+        setUserEmail(user.email);
         localStorage.setItem('user_data', JSON.stringify(user));
-
-        setMessage('');
-        window.location.href = '/schedulebuilder';
+        if (user.isVerified) {
+          setMessage('');
+          window.location.href = '/cards';
+        }
+        else {
+          setVerifyDialogOpen(true);
+        }
       }
     } catch (error: any) {
       console.error(error);
@@ -148,6 +149,9 @@ function Login() {
     }
   }
 
+  const handleVerifyToken = (enteredToken: string): boolean => {
+    return enteredToken === token;
+  };
 
   return (
     <div className="center-page">
@@ -172,6 +176,15 @@ function Login() {
         </form>
         {message && <p>{message}</p>}
       </div>
+      <VerifyDialog
+        open={verifyDialogOpen}
+        onClose={() => {setVerifyDialogOpen(false)}}
+        onVerify={handleVerifyToken}
+        login={loginName}
+        password={loginPassword}
+        email={userEmail} 
+        verifyToken={token}
+      />
     </div>
   );
 }
