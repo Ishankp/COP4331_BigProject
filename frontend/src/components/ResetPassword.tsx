@@ -1,0 +1,84 @@
+import React, { useState } from 'react';
+
+function ResetPassword() {
+  const app_name = 'wattareyoudoing.us';
+
+  function buildPath(route:string) : string
+  {
+    if (process.env.NODE_ENV != 'development')
+    {
+      return 'http://' + app_name + ':5000/' + route;
+    }
+    else
+    {
+      return 'http://localhost:5000/' + route;
+    }
+  }
+
+  const [message, setMessage] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
+  async function doResetPassword(event: React.FormEvent) : Promise<void> {
+    event.preventDefault();
+
+    const obj = { login: loginName, password: loginPassword };
+    const js = JSON.stringify(obj);
+
+    try {
+      const response = await fetch(buildPath('api/login'), {
+        method: 'POST',
+        body: js,
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      const res = await response.json();
+
+      if (res.id <= 0) {
+        setMessage('User/Password combination incorrect');
+      } else {
+        const user = { 
+          firstName: res.firstName, 
+          lastName: res.lastName, 
+          id: String(res.id) 
+        };
+        localStorage.setItem('user_data', JSON.stringify(user));
+
+        setMessage('');
+        window.location.href = '/schedulebuilder';
+      }
+    } catch (error: any) {
+      console.error(error);
+      setMessage('Error logging in. Please try again.');
+    }
+  }
+
+
+  return (
+    <div className="center-page">
+      <div className="form-container">
+        <h2>Login</h2>
+        <form onSubmit={doResetPassword}>
+          <input
+            type="password"
+            placeholder="New Password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            required
+          />
+          <input
+            type="password"
+            placeholder="Confirm New Password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+          />
+          <button type="submit">Login</button>
+        </form>
+        {message && <p>{message}</p>}
+      </div>
+    </div>
+  );
+}
+
+export default ResetPassword;

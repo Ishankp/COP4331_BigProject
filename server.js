@@ -1,3 +1,5 @@
+import crypto from 'crypto';
+
 const MongoClient = require('mongodb').MongoClient;
 
 // Correctly URL-encoded password
@@ -493,8 +495,79 @@ app.post('/api/getCombinedEvents', async (req, res) => {
     }
   });
   
-  
-  
+app.post('/api/resetPasswordRequest', async (req, res) => {
+    const { email } = req.body;
+
+    // Check if the email exists in your database
+    const db = client.db('SchedulePlanner');
+    
+    const user = await db.collection('Users').findOne({ email: email });
+        if (!user) {
+            error = 'User not found';
+            return res.status(404).json({ success, error });
+        }
+
+    // Generate a secure token
+    const token = crypto.randomBytes(32).toString('hex');
+
+    // Save the token and expiration time in the database
+    user.resetPasswordToken = token;
+    user.resetPasswordExpires = Date.now() + 15 * 60 * 1000; // 15 minutes from now
+    await user.save();
+
+    // Send the reset password email
+    const resetLink = `https://yourwebsite.com/reset-password?token=${token}`;
+    await sendResetEmail(email, resetLink);
+
+    res.status(200).json({ message: "Password reset email sent." });
+});
+
+
+// updateEvent API
+app.post('/api/resetPassword', async (req, res) => {
+    const { UserID, eventID, newEvent, newDesc, newStart, newEnd, newDays } = req.body;
+    let error = '';
+    let success = false;
+
+    try {
+        const db = client.db('SchedulePlanner');
+
+        // Ensure eventID is a valid ObjectId
+        const eventObjectId = ObjectId.isValid(eventID) ? new ObjectId(eventID) : null;
+        if (!eventObjectId) {
+            return res.status(400).json({ success, error: 'Invalid eventID' });
+        }
+
+        // Verify if UserID is valid
+        const userIdObj = typeof UserID === 'string' && ObjectId.isValid(UserID) ? new ObjectId(UserID) : parseInt(UserID);
+
+        // Define the updated fields conditionally
+        const updatedFields = {
+            ...(newEvent && { 'schedule.$.event': newEvent }),
+            ...(newDesc && { 'schedule.$.desc': newDesc }),
+            ...(newStart && { 'schedule.$.start': newStart }),
+            ...(newEnd && { 'schedule.$.end': newEnd }),
+            ...(newDays && { 'schedule.$.days': newDays }),
+        };
+
+        // Update the event by eventID
+        const result = await db.collection('Planner').updateOne(
+            { UserID: userIdObj, 'schedule.eventID': eventObjectId }, // Match by UserID and eventID
+            { $set: updatedFields } // Update only specified fields
+        );
+
+        if (result.modifiedCount > 0) {
+            success = true;
+        } else {
+            error = 'Failed to update event or event not found';
+        }
+    } catch (err) {
+        console.error('Error updating event:', err);
+        error = 'Server error: ' + err.message;
+    }
+
+    res.status(success ? 200 : 500).json({ success, error });
+}); 
   
   
   
