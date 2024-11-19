@@ -5,6 +5,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { v4 as uuidv4 } from 'uuid';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
+
 interface FrontendEvent {
   eventID: string;
   title: string;
@@ -40,6 +41,15 @@ const localizer = momentLocalizer(moment);
 
 const WeeklyScheduler: React.FC = () => {
   const secondaryColor = '#ff6b6b';
+  const navigate = useNavigate(); // Initialize navigate function
+
+  const app_name = 'wattareyoudoing.us';
+
+  function buildPath(route: string): string {
+    return process.env.NODE_ENV !== 'development'
+      ? 'http://' + app_name + ':5000/' + route
+      : 'http://localhost:5000/' + route;
+  }
 
   const eventPropGetter = (event: FrontendEvent) => ({
     style: {
@@ -76,7 +86,7 @@ const WeeklyScheduler: React.FC = () => {
 
   const loadEvents = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/viewEvent', {
+      const response = await fetch(buildPath('api/viewEvent'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -148,7 +158,7 @@ const WeeklyScheduler: React.FC = () => {
 
   const saveEventToBackend = async (event: BackendEvent) => {
     try {
-      const response = await fetch('http://localhost:5000/api/addEvent', {
+      const response = await fetch(buildPath('api/addEvent'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -166,7 +176,7 @@ const WeeklyScheduler: React.FC = () => {
 
   const updateEventInBackend = async (event: UpdateEventPayload) => {
     try {
-      const response = await fetch('http://localhost:5000/api/updateEvent', {
+      const response = await fetch(buildPath('api/updateEvent'), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -189,7 +199,7 @@ const WeeklyScheduler: React.FC = () => {
     if (!confirmed) return;
 
     try {
-      const response = await fetch('http://localhost:5000/api/deleteEvent', {
+      const response = await fetch(buildPath('api/deleteEvent'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -326,7 +336,7 @@ const WeeklyScheduler: React.FC = () => {
     dayFormat: (date: Date) => moment(date).format('ddd'),
   };
 
-  const navigate = useNavigate(); // Initialize navigate function
+
 
   const handleFinish = () => {
     navigate('/dashboard'); // Redirect to the DashboardPage path
