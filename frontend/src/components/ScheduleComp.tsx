@@ -20,14 +20,6 @@ interface ScheduleCompProps {
   friendID: number; // Friend's ID
 }
 
-const app_name = 'wattareyoudoing.us';
-
-  function buildPath(route: string): string {
-    return process.env.NODE_ENV !== 'development'
-      ? 'http://' + app_name + ':5000/' + route
-      : 'http://localhost:5000/' + route;
-  }
-
 const ScheduleComp: React.FC<ScheduleCompProps> = ({ userID, friendID }) => {
   const primaryColor = '#FF6B6B'; // Current user's color
   const secondaryColor = '#4ECDC4'; // Friend's color
@@ -43,7 +35,7 @@ const ScheduleComp: React.FC<ScheduleCompProps> = ({ userID, friendID }) => {
 
   const fetchEvents = async () => {
     try {
-      const response = await fetch(buildPath('api/getCombinedEvents'), {
+      const response = await fetch('http://localhost:5000/api/getCombinedEvents', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ UserID: userID, FriendID: friendID }),
@@ -72,7 +64,7 @@ const ScheduleComp: React.FC<ScheduleCompProps> = ({ userID, friendID }) => {
 
   const fetchFriendUsername = async () => {
     try {
-      const response = await fetch(buildPath('api/getContacts'), {
+      const response = await fetch('http://localhost:5000/api/getContacts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ UserID: userID }),
@@ -181,7 +173,7 @@ const ScheduleComp: React.FC<ScheduleCompProps> = ({ userID, friendID }) => {
         toolbar={false}
         startAccessor="start"
         endAccessor="end"
-        style={{ height: 450 }}
+        style={{ height: 520 }}
         eventPropGetter={eventPropGetter}
         formats={formats}
       />

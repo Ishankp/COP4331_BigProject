@@ -8,8 +8,8 @@ import { useNavigate } from 'react-router-dom'; // Import useNavigate
 interface FrontendEvent {
   eventID: string;
   title: string;
-  start: Date;
-  end: Date;
+  start: Date; 
+  end: Date;   
   location?: string;
   description?: string;
   days?: number[];
@@ -41,7 +41,7 @@ const localizer = momentLocalizer(moment);
 const WeeklyScheduler: React.FC = () => {
   const secondaryColor = '#ff6b6b';
 
-  const eventPropGetter = (/*event: FrontendEvent*/) => ({
+  const eventPropGetter = (event: FrontendEvent) => ({
     style: {
       backgroundColor: secondaryColor,
       color: 'white',
@@ -74,25 +74,16 @@ const WeeklyScheduler: React.FC = () => {
     loadEvents();
   }, []);
 
-  const app_name = 'wattareyoudoing.us';
-
-  function buildPath(route: string): string {
-    return process.env.NODE_ENV !== 'development'
-      ? 'http://' + app_name + ':5000/' + route
-      : 'http://localhost:5000/' + route;
-  }
-
-
   const loadEvents = async () => {
     try {
-      const response = await fetch(buildPath('api/viewEvent'), {
+      const response = await fetch('http://localhost:5000/api/viewEvent', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ UserID: userID }),
       });
-
+  
       const data = await response.json();
       if (data.events && data.events.length > 0) {
         const loadedEvents: FrontendEvent[] = data.events.flatMap((event: BackendEvent) => {
@@ -100,11 +91,11 @@ const WeeklyScheduler: React.FC = () => {
           const startMinute = parseInt(event.start.slice(2));
           const endHour = parseInt(event.end.slice(0, 2));
           const endMinute = parseInt(event.end.slice(2));
-
+  
           return event.days.map(dayIndex => {
             const startDate = new Date(moment().day(dayIndex).hour(startHour).minute(startMinute).toISOString());
             const endDate = new Date(moment().day(dayIndex).hour(endHour).minute(endMinute).toISOString());
-
+  
             return {
               eventID: event.eventID,
               title: event.event,
@@ -124,7 +115,7 @@ const WeeklyScheduler: React.FC = () => {
       console.error('Error loading events:', error);
     }
   };
-
+  
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => {
@@ -157,14 +148,14 @@ const WeeklyScheduler: React.FC = () => {
 
   const saveEventToBackend = async (event: BackendEvent) => {
     try {
-      const response = await fetch(buildPath('api/addEvent'), {
+      const response = await fetch('http://localhost:5000/api/addEvent', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(event),
       });
-
+  
       const data = await response.json();
       return data;
     } catch (error) {
@@ -175,14 +166,14 @@ const WeeklyScheduler: React.FC = () => {
 
   const updateEventInBackend = async (event: UpdateEventPayload) => {
     try {
-      const response = await fetch(buildPath('api/updateEvent'), {
+      const response = await fetch('http://localhost:5000/api/updateEvent', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(event),
       });
-
+  
       const data = await response.json();
       return data;
     } catch (error) {
@@ -193,19 +184,19 @@ const WeeklyScheduler: React.FC = () => {
 
   const deleteEvent = async () => {
     if (!selectedEvent) return;
-
+    
     const confirmed = window.confirm(`Are you sure you want to delete the event: ${selectedEvent.title}?`);
     if (!confirmed) return;
 
     try {
-      const response = await fetch(buildPath('api/deleteEvent'), {
+      const response = await fetch('http://localhost:5000/api/deleteEvent', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ UserID: userID, eventID: selectedEvent.eventID }),
       });
-
+  
       const data = await response.json();
       if (data.success) {
         setEvents(events.filter(e => e.eventID !== selectedEvent.eventID));
@@ -221,19 +212,19 @@ const WeeklyScheduler: React.FC = () => {
 
   const onSelectEvent = (event: FrontendEvent) => {
     setSelectedEvent(event);
-
+  
     // Convert start time to 12-hour format
     const startHour24 = moment(event.start).hour();
     const startMinute = moment(event.start).minute();
     const startAMPM = startHour24 >= 12 ? 'PM' : 'AM';
     const startHour12 = startHour24 % 12 === 0 ? 12 : startHour24 % 12; // Convert 0 to 12 for 12-hour format
-
+  
     // Convert end time to 12-hour format
     const endHour24 = moment(event.end).hour();
     const endMinute = moment(event.end).minute();
     const endAMPM = endHour24 >= 12 ? 'PM' : 'AM';
     const endHour12 = endHour24 % 12 === 0 ? 12 : endHour24 % 12;
-
+  
     setNewEvent({
       title: event.title,
       startHour: startHour12.toString(),
@@ -245,18 +236,18 @@ const WeeklyScheduler: React.FC = () => {
       location: event.location || '',
       description: event.description || '',
     });
-
+  
     setSelectedDays(event.days || []);
     openModal();
   };
-
+  
 
   const addOrUpdateEvent = async () => {
     const startHour = parseInt(newEvent.startHour) % 12 + (newEvent.startAMPM === 'PM' ? 12 : 0);
     const endHour = parseInt(newEvent.endHour) % 12 + (newEvent.endAMPM === 'PM' ? 12 : 0);
     const startTime = `${startHour.toString().padStart(2, '0')}${newEvent.startMinute.padStart(2, '0')}`;
     const endTime = `${endHour.toString().padStart(2, '0')}${newEvent.endMinute.padStart(2, '0')}`;
-
+  
     if (selectedEvent) {
       // Update each selected day's event individually
       const updatePromises = selectedDays.map(async (day) => {
@@ -269,7 +260,7 @@ const WeeklyScheduler: React.FC = () => {
           newEnd: endTime,
           newDays: [day],
         };
-
+  
         try {
           const response = await updateEventInBackend(updateEventData);
           if (!response.success) {
@@ -282,7 +273,7 @@ const WeeklyScheduler: React.FC = () => {
           return false;
         }
       });
-
+  
       const results = await Promise.all(updatePromises);
       if (results.every(success => success)) {
         console.log('All events updated successfully.');
@@ -303,7 +294,7 @@ const WeeklyScheduler: React.FC = () => {
           end: endTime,
           days: [day], // Single day for each new event
         };
-
+  
         try {
           const response = await saveEventToBackend(addEventData);
           if (!response.success) {
@@ -316,7 +307,7 @@ const WeeklyScheduler: React.FC = () => {
           return false;
         }
       });
-
+  
       const results = await Promise.all(createPromises);
       if (results.every(success => success)) {
         console.log('All events created successfully.');
@@ -327,9 +318,9 @@ const WeeklyScheduler: React.FC = () => {
       }
     }
   };
-
-
-
+  
+  
+  
 
   const formats = {
     dayFormat: (date: Date) => moment(date).format('ddd'),
@@ -343,6 +334,7 @@ const WeeklyScheduler: React.FC = () => {
 
   return (
     <div className="schedule-container" style={{ position: 'relative' }}>
+      <h2 style={{color: secondaryColor, textAlign: 'left' }}>Create Your Schedule</h2>
       <div className="button-container" style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '10px' }}>
         <button className="add-event-button" onClick={openModal} style={{ marginRight: '10px' }}>
           Add Event
@@ -450,10 +442,6 @@ const WeeklyScheduler: React.FC = () => {
                   <option value="PM">PM</option>
                 </select>
               </div>
-            </label>
-            <label>
-              Location:
-              <input type="text" name="location" value={newEvent.location} onChange={handleInputChange} />
             </label>
             <label>
               Description:
