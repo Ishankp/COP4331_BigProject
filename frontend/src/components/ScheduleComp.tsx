@@ -25,6 +25,14 @@ const ScheduleComp: React.FC<ScheduleCompProps> = ({ userID, friendID }) => {
   const secondaryColor = '#4ECDC4'; // Friend's color
   const navigate = useNavigate(); // Use navigate for routing
 
+  const app_name = 'wattareyoudoing.us';
+
+  function buildPath(route: string): string {
+    return process.env.NODE_ENV !== 'development'
+      ? 'http://' + app_name + ':5000/' + route
+      : 'http://localhost:5000/' + route;
+  }
+
   const [events, setEvents] = useState<CombinedEvent[]>([]);
   const [friendUsername, setFriendUsername] = useState<string>(''); // Friend's username
 
@@ -35,7 +43,7 @@ const ScheduleComp: React.FC<ScheduleCompProps> = ({ userID, friendID }) => {
 
   const fetchEvents = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/getCombinedEvents', {
+      const response = await fetch(buildPath('api/getCombinedEvents'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ UserID: userID, FriendID: friendID }),
@@ -64,7 +72,7 @@ const ScheduleComp: React.FC<ScheduleCompProps> = ({ userID, friendID }) => {
 
   const fetchFriendUsername = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/getContacts', {
+      const response = await fetch(buildPath('api/getContacts'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ UserID: userID }),
