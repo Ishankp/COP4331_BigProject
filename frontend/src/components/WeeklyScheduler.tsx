@@ -51,7 +51,7 @@ const WeeklyScheduler: React.FC = () => {
       : 'http://localhost:5000/' + route;
   }
 
-  const eventPropGetter = (event: FrontendEvent) => ({
+  const eventPropGetter = (/*event: FrontendEvent*/) => ({
     style: {
       backgroundColor: secondaryColor,
       color: 'white',
