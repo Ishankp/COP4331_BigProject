@@ -1,3 +1,3 @@
-const app_name = 'cop4331-3.com';
+const app_name = 'wattareyoudoing.us';
 
 export default app_name;
