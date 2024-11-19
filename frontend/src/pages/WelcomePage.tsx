@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import Login from '../components/Login';
 import Register from '../components/Register'; 
 
@@ -29,9 +29,21 @@ const WelcomePage = () => {
 
       {!showLogin && !showRegister ? (
         <div className="welcome-content">
-          <h1>Welcome to TimeLink!</h1>
-          <p>Connect with friends and find the best times to meet by comparing your schedules in real time.</p>
-          <button className="get-started-button">Get Started</button>
+          <h1 style={{ fontSize: '70px', fontWeight: 'bold', marginBottom: '20px' }}>Welcome to TimeLink!</h1>
+          <p
+            style={{
+              fontSize: '18px',
+              color: '#555',
+              maxWidth: '600px',
+              marginBottom: '30px',
+              lineHeight: '1.6',
+            }}
+          >
+            The ultimate tool for effortless weekly schedule comparisons! Whether you're coordinating plans with friends,
+            family, or colleagues, our platform makes it simple to share and compare schedules. Build your schedule,
+            connect with others, and find the perfect time to meet!
+          </p>
+          <button className="get-started-button" onClick={handleRegisterClick}>Get Started</button>
         </div>
       ) : showLogin ? (
         <Login /> // Render the Login component when showLogin is true
@@ -43,3 +55,4 @@ const WelcomePage = () => {
 };
 
 export default WelcomePage;
+

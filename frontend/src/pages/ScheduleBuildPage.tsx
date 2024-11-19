@@ -34,9 +34,7 @@ const ScheduleBuildPage: React.FC = () => {
                 </div>
             </div>
 
-            <div className="schedule-content">
-                <h1 className="page-title">Create Your Schedule</h1>
-            </div>    
+ 
             <div className="schedule-builder">
                 <WeeklyScheduler />
             </div>

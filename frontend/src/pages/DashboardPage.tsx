@@ -122,124 +122,123 @@ const copyShareKey = async () => {
 
 
   return (
-    <div style={{ display: 'flex', height: '100vh' }}>
-    {/* Sidebar */}
-    <div
-      style={{
-        width: '250px',
-        background: '#f7f7f7',
-        padding: '30px',
-        borderRight: '1px solid #ddd',
-        position: 'fixed',
-        height: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        left: '0',
-      }}
-    >
-      {/* Friends List Section */}
-      <div style={{ overflowY: 'auto', flexGrow: 1, paddingRight: '10px' }}>
-        <h3>Friends</h3>
-        <ul style={{ listStyleType: 'none', padding: 0 }}>
-          {friends.length > 0 ? (
-            friends.map((friend: any) => (
-              <li
-                key={friend.UserID}
-                onClick={() => {
-                  setSelectedFriend(friend);
-                  setModalVisible(true);
-                }}
-                style={{
-                  marginBottom: '10px',
-                  padding: '8px',
-                  borderRadius: '4px',
-                  backgroundColor: '#FF6B6B',
-                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  cursor: 'pointer',
-                  transition: 'background-color 0.3s ease',
-                  color: 'white',
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#a44343')}
-                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#FF6B6B')}
-              >
-                {friend.Login}
-              </li>
-            ))
-          ) : (
-            <p style={{ fontStyle: 'italic', color: '#888' }}>No friends found.</p>
-          )}
-        </ul>
-      </div>
-
-      {/* Bottom Section for Adding Friends and Share Key */}
-      <div style={{ paddingTop: '20px', borderRadius: '8px', border: '3px solid #ff6b6b', marginBottom: '20px'  }}>
-        <div>
-          <h4>Add Friend</h4>
-          <input
-            type="text"
-            value={friendKey}
-            onChange={(e) => setFriendKey(e.target.value)}
-            placeholder="Enter friend's share key"
-            style={{
-              width: '90%',
-              padding: '8px',
-              marginBottom: '10px',
-              borderRadius: '4px',
-              border: '1px solid #ccc',
-            }}
-          />
-          <button
-            onClick={handleAddFriend}
-            style={{
-              width: '75%',
-              background: '#ff6b6b',
-              color: '#fff',
-              padding: '8px',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-            }}
-          >
-            Add Friend
-          </button>
+    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+      {/* Sidebar */}
+      <div
+        style={{
+          width: '250px',
+          background: '#f7f7f7',
+          padding: '30px',
+          borderRight: '1px solid #ddd',
+          position: 'fixed',
+          height: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          left: '0',
+        }}
+      >
+        {/* Friends List Section */}
+        <div style={{ overflowY: 'auto', flexGrow: 1}}>
+          <h3>Friends</h3>
+          <ul style={{ listStyleType: 'none', padding: 0 }}>
+            {friends.length > 0 ? (
+              friends.map((friend: any) => (
+                <li
+                  key={friend.UserID}
+                  onClick={() => {
+                    setSelectedFriend(friend);
+                    setModalVisible(true);
+                  }}
+                  style={{
+                    marginBottom: '10px',
+                    padding: '8px',
+                    borderRadius: '4px',
+                    backgroundColor: '#FF6B6B',
+                    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.3s ease',
+                    color: 'white',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#a44343')}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#FF6B6B')}
+                >
+                  {friend.Login}
+                </li>
+              ))
+            ) : (
+              <p style={{ fontStyle: 'italic', color: '#888' }}>No friends found.</p>
+            )}
+          </ul>
         </div>
 
-        <div style={{ marginTop: '20px', marginBottom: '20px'}}>
-          <h4>Your Share Key</h4>
-          <p
-            style={{
-              background: '#f0f0f0',
-              padding: '8px',
-              borderRadius: '4px',
-              fontSize: '14px',
-              overflowWrap: 'break-word',
-            }}
-          >
-            {ShareKey}
-          </p>
-          <button
-            onClick={copyShareKey}
-            style={{
-              background: '#ff6b6b',
-              color: '#fff',
-              padding: '8px',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-            }}
-          >
-            Copy Share Key
-          </button>
+        {/* Bottom Section for Adding Friends and Share Key */}
+        <div style={{ paddingTop: '20px', borderRadius: '8px', border: '3px solid #ff6b6b', marginBottom: '20px' }}>
+          <div>
+            <h4>Add Friend</h4>
+            <input
+              type="text"
+              value={friendKey}
+              onChange={(e) => setFriendKey(e.target.value)}
+              placeholder="Enter friend's share key"
+              style={{
+                width: '90%',
+                padding: '8px',
+                marginBottom: '10px',
+                borderRadius: '4px',
+                border: '1px solid #ccc',
+              }}
+            />
+            <button
+              onClick={handleAddFriend}
+              style={{
+                width: '75%',
+                background: '#ff6b6b',
+                color: '#fff',
+                padding: '8px',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+              }}
+            >
+              Add Friend
+            </button>
+          </div>
+
+          <div style={{ marginTop: '20px', marginBottom: '20px' }}>
+            <h4>Your Share Key</h4>
+            <p
+              style={{
+                background: '#f0f0f0',
+                padding: '8px',
+                borderRadius: '4px',
+                fontSize: '14px',
+                overflowWrap: 'break-word',
+              }}
+            >
+              {ShareKey}
+            </p>
+            <button
+              onClick={copyShareKey}
+              style={{
+                background: '#ff6b6b',
+                color: '#fff',
+                padding: '8px',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+              }}
+            >
+              Copy Share Key
+            </button>
+          </div>
         </div>
       </div>
-    </div>
-
 
       {/* Main Content */}
-      <div style={{ flex: 1, paddingLeft: '270px', padding: '20px' }}>
+      <div style={{ flex: 1, paddingLeft: '0px', padding: '10px' }}>
         <div className="navbar">
           <h2 className="site-title">TimeLink</h2>
           <div className="auth-buttons">
@@ -256,39 +255,107 @@ const copyShareKey = async () => {
           </div>
         </div>
       </div>
+
+
       <div className="schedule-view">
         <SchedulerView />
       </div>
 
+
       {modalVisible && selectedFriend && (
-        <div className="modal">
-          <div className="modal-content">
-            <h2>
+        <div
+          className="modal"
+          style={{
+            position: 'fixed',
+            top: '0',
+            left: '0',
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0, 0, 0, 0.5)', // Dim the background
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 1000,
+          }}
+        >
+          <div
+            className="modal-content"
+            style={{
+              backgroundColor: 'white',
+              borderRadius: '8px',
+              padding: '20px',
+              width: '400px',
+              maxWidth: '90%', // Make it responsive
+              boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+              textAlign: 'center', // Center align text content
+            }}
+          >
+            <h2 style={{ marginBottom: '10px', color: '#333' }}>
               {selectedFriend.firstName} {selectedFriend.lastName}
             </h2>
-            <p>Username: @{selectedFriend.Login}</p>
-            <p>Share Key: {selectedFriend.ShareKey}</p> {/* Debugging */}
-            <div style={{ display: 'flex', gap: '100px', marginTop: '20px' }}>
+            <p style={{ margin: '5px 0', fontSize: '14px', color: '#666' }}>
+              <strong>Username:</strong> @{selectedFriend.Login}
+            </p>
+            <p style={{ margin: '5px 0', fontSize: '14px', color: '#666' }}>
+              <strong>Share Key:</strong> {selectedFriend.ShareKey}
+            </p>
+
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                marginTop: '20px',
+              }}
+            >
               <button
                 onClick={() =>
                   navigate('/comparing', {
                     state: { UserID: userData.id, FriendID: selectedFriend.UserID },
                   })
                 }
+                style={{
+                  backgroundColor: '#FF6B6B',
+                  color: 'white',
+                  border: 'none',
+                  padding: '10px 20px',
+                  borderRadius: '5px',
+                  cursor: 'pointer',
+                  flex: '1',
+                  marginRight: '10px',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#a44343')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#FF6B6B')}
               >
                 Compare Schedules
               </button>
-              <button onClick={handleDeleteContact}>Delete Contact</button>
+              <button
+                onClick={handleDeleteContact}
+                style={{
+                  backgroundColor: '#FF6B6B',
+                  color: 'white',
+                  border: 'none',
+                  padding: '10px 20px',
+                  borderRadius: '5px',
+                  cursor: 'pointer',
+                  flex: '1',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#a44343')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#FF6B6B')}
+              >
+                Delete Contact
+              </button>
             </div>
+
             <button
               onClick={() => setModalVisible(false)}
               style={{
                 marginTop: '20px',
                 backgroundColor: 'gray',
                 color: 'white',
-                borderRadius: '4px',
-                padding: '8px',
+                borderRadius: '5px',
+                padding: '10px 20px',
                 border: 'none',
+                cursor: 'pointer',
               }}
             >
               Close
@@ -297,9 +364,11 @@ const copyShareKey = async () => {
         </div>
       )}
 
+
     </div>
   );
 };
+
 
 export default DashboardPage;
 
