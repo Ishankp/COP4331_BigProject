@@ -9,32 +9,30 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final ApiService apiService = ApiService(); // Initialize the API service
   String loginName = '';
   String password = '';
   String message = '';
 
   void _login() async {
-    String payload = '{"login":"$loginName", "password":"$password"}';
-
     try {
-      // Call the login API
-      String response = await ApiService.getJson('http://wattareyoudoing.us/api/login', payload);
+      final response = await apiService.login(loginName, password);
 
-      // Parse the response
-      var jsonResponse = jsonDecode(response);
-
-      if (jsonResponse['id'] != null && jsonResponse['id'] > 0) {
+      if (response['id'] != null && response['id'] > 0) {
         // Successful login
-        Navigator.pushNamed(context, '/cards'); // Navigate to the next screen
-      } else {
-        // Display error message
         setState(() {
-          message = jsonResponse['error'] ?? 'Login failed';
+          message = 'Welcome, ${response['firstName']}!';
+        });
+        Navigator.pushNamed(context, '/create'); // Navigate to the next screen
+      } else {
+        // Failed login
+        setState(() {
+          message = response['error'] ?? 'Invalid credentials';
         });
       }
     } catch (e) {
       setState(() {
-        message = 'An error occurred. Please try again.';
+        message = 'Error: $e';
       });
     }
   }
@@ -49,7 +47,6 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              // Header Text
               const Text(
                 'Welcome to Time Link!',
                 style: TextStyle(
@@ -60,8 +57,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 20),
-
-              // Login Name Input
               TextField(
                 decoration: const InputDecoration(
                   filled: true,
@@ -75,8 +70,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 },
               ),
               const SizedBox(height: 10),
-
-              // Password Input
               TextField(
                 obscureText: true,
                 decoration: const InputDecoration(
@@ -91,18 +84,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 },
               ),
               const SizedBox(height: 10),
-
-              // Display error message
               if (message.isNotEmpty)
                 Text(
                   message,
-                  style: TextStyle(color: Colors.red, fontSize: 14),
+                  style: const TextStyle(color: Colors.red, fontSize: 14),
                 ),
               const SizedBox(height: 10),
-
-              // Login Button
               ElevatedButton(
-                onPressed: _login, // Fixed: Now matches the expected type
+                onPressed: _login,
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.brown[50]),
                 child: const Text(
                   'Login',
@@ -110,8 +99,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               const SizedBox(height: 10),
-
-              // Navigate to Register Button
               ElevatedButton(
                 onPressed: () {
                   Navigator.push(

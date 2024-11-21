@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mobile_app/utils/getAPI.dart'; // Adjust path as needed
 
 class RegisterScreen extends StatefulWidget {
   @override
@@ -6,12 +7,44 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
+  final ApiService apiService = ApiService(); // Initialize the API service
   String firstName = '';
   String lastName = '';
-  String username = '';
+  String login = '';
   String password = '';
   String email = '';
   String shareKey = ''; // Optional field
+  String message = '';
+
+  void _register() async {
+    try {
+      final response = await apiService.register(
+        firstName: firstName,
+        lastName: lastName,
+        login: login,
+        password: password,
+        email: email,
+        shareKey: shareKey.isEmpty ? null : shareKey, // Pass shareKey only if it's not empty
+      );
+
+      if (response['id'] != null && response['id'] > 0) {
+        // Registration successful
+        setState(() {
+          message = 'Registration successful. Welcome, $firstName!';
+        });
+        Navigator.pop(context); // Navigate back to the login screen
+      } else {
+        // Registration failed
+        setState(() {
+          message = response['error'] ?? 'Registration failed.';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        message = 'Error: $e';
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,30 +52,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
       backgroundColor: const Color(0xFFFDD4A5),
       body: Center(
         child: SingleChildScrollView(
-          child: Container(
-            width: MediaQuery.of(context).size.width * 0.9,
-            padding: const EdgeInsets.all(16.0),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.5),
-                  spreadRadius: 5,
-                  blurRadius: 7,
-                  offset: Offset(0, 3),
-                ),
-              ],
-            ),
+          child: SizedBox(
+            width: 200,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Header
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
                 const Text(
                   'Register',
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
+                    color: Color(0xFFFD6A6B),
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -78,17 +98,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 10),
 
-                // Username Input
+                // Login Input
                 TextField(
                   decoration: const InputDecoration(
                     filled: true,
                     fillColor: Colors.white,
                     border: OutlineInputBorder(),
-                    labelText: 'Username',
-                    hintText: 'Enter Your Username',
+                    labelText: 'Login Name',
+                    hintText: 'Enter Your Login Name',
                   ),
                   onChanged: (text) {
-                    username = text;
+                    login = text;
                   },
                 ),
                 const SizedBox(height: 10),
@@ -124,7 +144,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 10),
 
-                // Share Key Input (Optional)
+                // Share Key Input
                 TextField(
                   decoration: const InputDecoration(
                     filled: true,
@@ -137,26 +157,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     shareKey = text;
                   },
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 10),
+
+                // Error/Success Message
+                if (message.isNotEmpty)
+                  Text(
+                    message,
+                    style: TextStyle(
+                      color: message.contains('success') ? Colors.green : Colors.red,
+                      fontSize: 14,
+                    ),
+                  ),
+                const SizedBox(height: 10),
 
                 // Register Button
                 ElevatedButton(
-                  onPressed: () {
-                    // Perform register action
-                    print(
-                        "Registering with $firstName $lastName, $username, $email, $password, Share Key: $shareKey");
-                    Navigator.pop(context); // Navigate back to login screen
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.redAccent,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
+                  onPressed: _register,
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.brown[50]),
                   child: const Text(
                     'Register',
-                    style: TextStyle(fontSize: 16, color: Colors.white),
+                    style: TextStyle(fontSize: 14, color: Colors.black),
                   ),
                 ),
-                const SizedBox(height: 10),
 
                 // Back to Login Button
                 TextButton(
@@ -165,7 +187,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   },
                   child: const Text(
                     'Back to Login',
-                    style: TextStyle(color: Colors.redAccent),
+                    style: TextStyle(color: Colors.black),
                   ),
                 ),
               ],
