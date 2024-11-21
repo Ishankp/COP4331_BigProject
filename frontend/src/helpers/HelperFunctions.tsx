@@ -19,3 +19,16 @@ export async function sendEmail(message: string, email_address: string) {
     );
     return result;
 }
+
+export async function sendResetEmail(link: string, email_address: string) {
+    const result = await emailjs.send(
+        'service_qi1sbur',
+        'template_p1dipwy',
+        {
+        user_email: email_address,
+        link: link,
+        },
+        'mfbP6q5wTnsFmAZvR'
+    );
+    return result;
+}
