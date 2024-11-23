@@ -1,5 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mobile_app/utils/getAPI.dart'; // Adjust path as needed
+import 'package:flutter_mobile_app/utils/sendEmail.dart';
+import 'dart:math';
+
+String generateToken() {
+  final random = Random();
+  int code = random.nextInt(900000) + 100000; // Ensures a 6-digit number
+  return code.toString();
+}
 
 class RegisterScreen extends StatefulWidget {
   @override
@@ -15,6 +23,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   String email = '';
   String shareKey = ''; // Optional field
   String message = '';
+  String token = generateToken();
 
   void _register() async {
     try {
@@ -24,15 +33,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
         login: login,
         password: password,
         email: email,
+        token: token,
         shareKey: shareKey.isEmpty ? null : shareKey, // Pass shareKey only if it's not empty
       );
 
-      if (response['id'] != null && response['id'] > 0) {
+      if (response['success'] != null) {
         // Registration successful
         setState(() {
           message = 'Registration successful. Welcome, $firstName!';
         });
-        Navigator.pop(context); // Navigate back to the login screen
+        final emailSuccess = await EmailService.sendEmail(userEmail: email, message: token);
+        setState(() {
+          message = emailSuccess.toString();
+        });
+        _showVerificationDialog();
+        //Navigator.pop(context); // Navigate back to the login screen
       } else {
         // Registration failed
         setState(() {
@@ -44,6 +59,84 @@ class _RegisterScreenState extends State<RegisterScreen> {
         message = 'Error: $e';
       });
     }
+  }
+
+  void _showVerificationDialog() {
+    TextEditingController codeController = TextEditingController();
+    String errorMessage = '';
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Verify Your Email'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'A 6-digit code has been sent to your email. Please enter it below:',
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: codeController,
+                    keyboardType: TextInputType.number,
+                    maxLength: 6,
+                    decoration: InputDecoration(
+                      labelText: '6-digit Code',
+                      counterText: '',
+                      errorText: errorMessage.isNotEmpty ? errorMessage : null,
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    String code = codeController.text;
+
+                    // Validate the code
+                    if (code.isEmpty) {
+                      setState(() {
+                        errorMessage = 'Code cannot be empty!';
+                      });
+                    } else if (code.length != 6) {
+                      setState(() {
+                        errorMessage = 'Code must be 6 digits!';
+                      });
+                    } else if (code != token) {
+                      setState(() {
+                        errorMessage = 'Code does not match!';
+                      });
+                    } else {
+                      final response = ApiService().verifyUser(login, password);
+                      setState(() {
+                        errorMessage = '';
+                      });
+                      Navigator.of(context).pop();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Verification successful!'),
+                        ),
+                      );
+                      Navigator.of(context).pop();
+                    }
+                  },
+                  child: Text('Verify'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
   @override

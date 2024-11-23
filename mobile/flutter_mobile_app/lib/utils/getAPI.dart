@@ -165,6 +165,7 @@ class ApiService {
     required String login,
     required String password,
     required String email,
+    required String token,
     String? shareKey, // Optional Share Key
   }) async {
     final url = Uri.parse('$baseUrl/register');
@@ -178,6 +179,8 @@ class ApiService {
           "Login": login,
           "Password": password,
           "email": email,
+          "token": token,
+          "isVerified": false,
           "ShareKey": shareKey ?? '', // Include ShareKey if provided
         }),
       );
@@ -186,6 +189,26 @@ class ApiService {
         return jsonDecode(response.body);
       } else {
         throw Exception('Failed to register: ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Error connecting to API: $e');
+    }
+  }
+
+  // Login API
+  Future<Map<String, dynamic>> verifyUser(String login, String password) async {
+    final url = Uri.parse('$baseUrl/verify_user');
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"login": login, "password": password}),
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        throw Exception('Failed to verify: ${response.body}');
       }
     } catch (e) {
       throw Exception('Error connecting to API: $e');

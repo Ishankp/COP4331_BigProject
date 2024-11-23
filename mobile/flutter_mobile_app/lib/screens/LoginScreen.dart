@@ -13,17 +13,25 @@ class _LoginScreenState extends State<LoginScreen> {
   String loginName = '';
   String password = '';
   String message = '';
+  String token = '';
 
   void _login() async {
     try {
       final response = await apiService.login(loginName, password);
 
       if (response['id'] != null && response['id'] > 0) {
-        // Successful login
-        setState(() {
-          message = 'Welcome, ${response['firstName']}!';
-        });
-        Navigator.pushNamed(context, '/create'); // Navigate to the next screen
+        token = response['token'];
+        if(!response['isVerified']) {
+          _showVerificationDialog();
+        }
+        else {
+          // Successful login
+          setState(() {
+            message = 'Welcome, ${response['firstName']}!';
+          });
+          Navigator.pushNamed(context, '/create'); // Navigate to the next screen
+        }
+
       } else {
         // Failed login
         setState(() {
@@ -35,6 +43,84 @@ class _LoginScreenState extends State<LoginScreen> {
         message = 'Error: $e';
       });
     }
+  }
+
+  void _showVerificationDialog() {
+    TextEditingController codeController = TextEditingController();
+    String errorMessage = '';
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Verify Your Email'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'A 6-digit code has been sent to your email. Please enter it below:',
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: codeController,
+                    keyboardType: TextInputType.number,
+                    maxLength: 6,
+                    decoration: InputDecoration(
+                      labelText: '6-digit Code',
+                      counterText: '',
+                      errorText: errorMessage.isNotEmpty ? errorMessage : null,
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    String code = codeController.text;
+
+                    // Validate the code
+                    if (code.isEmpty) {
+                      setState(() {
+                        errorMessage = 'Code cannot be empty!';
+                      });
+                    } else if (code.length != 6) {
+                      setState(() {
+                        errorMessage = 'Code must be 6 digits!';
+                      });
+                    } else if (code != token) {
+                      setState(() {
+                        errorMessage = 'Code does not match!';
+                      });
+                    } else {
+                      setState(() {
+                        errorMessage = '';
+                      });
+                      final response = ApiService().verifyUser(loginName, password);
+                      Navigator.of(context).pop();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Verification successful!'),
+                        ),
+                      );
+                      Navigator.pushNamed(context, '/create'); // Navigate to the next screen
+                    }
+                  },
+                  child: Text('Verify'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
