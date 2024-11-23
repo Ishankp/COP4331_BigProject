@@ -196,7 +196,7 @@ const SchedulerView: React.FC = () => {
   };
 
   const handleEditSchedule = () => {
-    navigate('/schedule-build'); // Redirect to the ScheduleBuildPage
+    navigate('/schedulebuilder'); // Redirect to the ScheduleBuildPage
   };
 
   const formats = {
