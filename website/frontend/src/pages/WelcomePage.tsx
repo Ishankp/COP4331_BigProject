@@ -1,10 +1,12 @@
-import { useState } from 'react';
-import Login from '../components/Login';
-import Register from '../components/Register'; 
+import { useState } from "react";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
+import Login from "../components/Login";
+import Register from "../components/Register";
 
 const WelcomePage = () => {
   const [showLogin, setShowLogin] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
+  const navigate = useNavigate(); // Initialize navigate
 
   // Function to handle the login button click
   const handleLoginClick = () => {
@@ -17,20 +19,34 @@ const WelcomePage = () => {
     setShowLogin(false); // Ensure only register is shown
   };
 
+  // Function to redirect to the welcome page
+  const redirectToWelcome = () => {
+    navigate("wattareyoudoing.us"); // Navigate to the welcome page route
+  };
+
   return (
     <div>
       <div className="navbar">
-        <h2 className="site-title">TimeLink</h2>
+        <div className="site-title" onClick={redirectToWelcome}>
+          TimeLink
+        </div>
         <div className="auth-buttons">
-          <button className="login-button" onClick={handleLoginClick}>Login</button>
-          <button className="signup-button" onClick={handleRegisterClick}>Sign Up</button>
+          <button className="login-button" onClick={handleLoginClick}>
+            Login
+          </button>
+          <button className="signup-button" onClick={handleRegisterClick}>
+            Sign Up
+          </button>
         </div>
       </div>
 
       {!showLogin && !showRegister ? (
         <div className="welcome-content">
           <h1>Welcome to TimeLink!</h1>
-          <p>Connect with friends and find the best times to meet by comparing your schedules in real time.</p>
+          <p>
+            Connect with friends and find the best times to meet by comparing
+            your schedules in real time.
+          </p>
           <button className="get-started-button">Get Started</button>
         </div>
       ) : showLogin ? (
