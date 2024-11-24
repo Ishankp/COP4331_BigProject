@@ -17,10 +17,17 @@ const WelcomePage = () => {
     setShowLogin(false); // Ensure only register is shown
   };
 
+  // Function to redirect to the welcome page
+  const redirectToWelcome = () => {
+    setShowLogin(false);
+    setShowRegister(false); // Navigate to the welcome page route
+  };
+
+
   return (
     <div>
       <div className="navbar">
-        <h2 className="site-title">TimeLink</h2>
+        <h2 className="site-title" onClick={redirectToWelcome}>TimeLink</h2>
         <div className="auth-buttons">
           <button className="login-button" onClick={handleLoginClick}>Login</button>
           <button className="signup-button" onClick={handleRegisterClick}>Sign Up</button>
