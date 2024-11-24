@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_mobile_app/screens/RegisterScreen.dart';
 import 'package:flutter_mobile_app/utils/getAPI.dart'; // Adjust import path if needed
+import 'package:shared_preferences/shared_preferences.dart'; // Import for local storage
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -14,12 +15,13 @@ class _LoginScreenState extends State<LoginScreen> {
   String password = '';
   String message = '';
 
-  void _login() async {
+  Future<void> _login() async {
     try {
       final response = await apiService.login(loginName, password);
 
       if (response['id'] != null && response['id'] > 0) {
         // Successful login
+        await _saveUserData(response); // Save user data locally
         setState(() {
           message = 'Welcome, ${response['firstName']}!';
         });
@@ -35,6 +37,19 @@ class _LoginScreenState extends State<LoginScreen> {
         message = 'Error: $e';
       });
     }
+  }
+
+  Future<void> _saveUserData(Map<String, dynamic> userData) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    // Save user data to SharedPreferences
+    await prefs.setString('firstName', userData['firstName'] ?? '');
+    await prefs.setString('lastName', userData['lastName'] ?? '');
+    await prefs.setString('id', userData['id'].toString());
+    await prefs.setBool('isVerified', userData['isVerified'] ?? false);
+    await prefs.setString('token', userData['token'] ?? '');
+    await prefs.setString('email', userData['email'] ?? '');
+    await prefs.setString('ShareKey', userData['ShareKey'] ?? '');
   }
 
   @override
@@ -92,7 +107,8 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 10),
               ElevatedButton(
                 onPressed: _login,
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.brown[50]),
+                style:
+                    ElevatedButton.styleFrom(backgroundColor: Colors.brown[50]),
                 child: const Text(
                   'Login',
                   style: TextStyle(fontSize: 14, color: Colors.black),
@@ -106,7 +122,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     MaterialPageRoute(builder: (context) => RegisterScreen()),
                   );
                 },
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.brown[50]),
+                style:
+                    ElevatedButton.styleFrom(backgroundColor: Colors.brown[50]),
                 child: const Text(
                   'Register',
                   style: TextStyle(color: Colors.black),
