@@ -21,7 +21,8 @@ const WelcomePage = () => {
 
   // Function to redirect to the welcome page
   const redirectToWelcome = () => {
-    navigate("wattareyoudoing.us"); // Navigate to the welcome page route
+    setShowLogin(false);
+    setShowRegister(false); // Navigate to the welcome page route
   };
 
   return (
