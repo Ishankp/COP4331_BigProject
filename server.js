@@ -168,36 +168,6 @@ app.post('/api/verify_user', async (req, res, next) => {
     res.status(success ? 200 : 500).json({ success, error })
 });
 
-// verify_user API
-app.post('/api/verify_user', async (req, res, next) => {
-    // incoming: login, password
-    // outgoing: isVerified
-    const { login, password } = req.body;
-    let error = '';
-    let success = false;
-
-    const db = client.db('SchedulePlanner');
-    try {
-        const updatedVerification = {...{isVerified: true}};
-        const results = await db.collection('Users').updateOne(
-            { Login: login, Password: password },
-            { $set: updatedVerification}
-        );
-        if (results.modifiedCount > 0) {
-            success = true;
-        }
-        else {
-            error = 'Server failed to verify user';
-        }
-    } catch (err) {
-        console.error('Error during user verification', err);
-        res.status(500).json({ id: -1, firstName: '', lastName: '', error: 'Server error' });
-    }
-
-    res.status(success ? 200 : 500).json({ success, error })
-});
-
-
 
 //  addEvent API
 app.post('/api/addEvent', async (req, res) => {
@@ -623,6 +593,57 @@ app.post('/api/resetPasswordRequest', async (req, res) => {
 });
 
 
+//Request Reset Password API (Mobile)
+app.post('/api/resetPasswordRequestMobile', async (req, res) => {
+    let error = '';
+    let success = false;
+    let token = '';
+    const { email } = req.body;
+
+    try { 
+        // Check if the email exists in your database
+        const db = client.db('SchedulePlanner');
+        
+        const user = await db.collection('Users').findOne({ email: email });
+        if (!user) {
+            error = 'User not found';
+            return res.status(404).json({ success, error });
+        }
+
+        // Generate a secure token
+
+        token = crypto.randomInt(100000, 1000000).toString();
+        Object.freeze(token); //Ensures token can not be changed
+
+
+        // Save the token and expiration time in the database
+        const updatedFields = {
+            ...({resetPasswordToken: token}),
+            ...({resetPasswordExpire: Date.now() + 15 * 60 * 1000})
+        }
+
+        const result = await db.collection('Users').updateOne(
+            { email: email},
+            { $set: updatedFields }
+        );
+
+        if (result.modifiedCount > 0) {
+            success = true;
+        } else {
+            error = 'Failed to reset password for user';
+        }
+    } 
+    catch (err) {
+        console.error('Error resetting password:', err);
+        error = 'Server error: ' + err.message;
+    }
+
+    // Send the reset password email
+
+    res.status(200).json({ resetPasswordToken: token, success: success });
+});
+
+
 //Update DB with new Password 
 app.post('/api/resetPassword', async (req, res) => {
     const { newPassword, resetPasswordToken } = req.body;
@@ -667,10 +688,5 @@ app.post('/api/resetPassword', async (req, res) => {
 
     res.status(success ? 200 : 500).json({ success, error });
 }); 
-    
-
-//	Email Lost Password API (Work in progress)
-
-
 
 app.listen(5000); // start Node + Express server on port 5000
