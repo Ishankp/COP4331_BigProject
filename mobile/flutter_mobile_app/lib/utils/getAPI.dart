@@ -136,7 +136,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  final String baseUrl = 'http://10.0.2.2:5000/api'; // Replace with your actual server URL
+  final String baseUrl = 'http://wattareyoudoing.us:5000/api'; // Replace with your actual server URL
 
   // Login API
   Future<Map<String, dynamic>> login(String login, String password) async {
