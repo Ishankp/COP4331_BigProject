@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import ScheduleComp from '../components/ScheduleComp.tsx';
+import React, { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import ScheduleComp from "../components/ScheduleComp.tsx";
 
 const ComparingPage: React.FC = () => {
   const location = useLocation();
@@ -11,17 +11,28 @@ const ComparingPage: React.FC = () => {
 
   const toggleDropdown = () => setDropdownVisible(!dropdownVisible);
 
-  const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
-  const firstInitial = userData?.firstName ? userData.firstName.charAt(0).toUpperCase() : 'P';
+  const userData = JSON.parse(localStorage.getItem("user_data") || "{}");
+  const firstInitial = userData?.firstName
+    ? userData.firstName.charAt(0).toUpperCase()
+    : "P";
 
   const handleLogout = () => {
-    localStorage.removeItem('user_data');
-    navigate('/');
+    localStorage.removeItem("user_data");
+    navigate("/");
+  };
+
+  // Function to redirect to the welcome page
+  const redirectToDash = () => {
+    navigate("wattareyoudoing.us/dashboard"); // Navigate to the welcome page route
   };
 
   // Fallback if UserID or FriendID is not provided
   if (!UserID || !FriendID) {
-    return <p>Error: Missing user or friend data. Please try again from the Dashboard.</p>;
+    return (
+      <p>
+        Error: Missing user or friend data. Please try again from the Dashboard.
+      </p>
+    );
   }
 
   // Convert UserID and FriendID to numbers (if necessary)
@@ -32,7 +43,9 @@ const ComparingPage: React.FC = () => {
     <div>
       {/* Navbar */}
       <div className="navbar">
-        <h2 className="site-title">TimeLink</h2>
+        <div className="site-title" onClick={redirectToDash}>
+          TimeLink
+        </div>
         <div className="auth-buttons">
           <button className="profile-button" onClick={toggleDropdown}>
             {firstInitial}
@@ -56,4 +69,3 @@ const ComparingPage: React.FC = () => {
 };
 
 export default ComparingPage;
-

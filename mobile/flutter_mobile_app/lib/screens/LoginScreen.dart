@@ -28,12 +28,12 @@ class _LoginScreenState extends State<LoginScreen> {
         }
         else {
           // Successful login
+          await _saveUserData(response); // Save user data locally
           setState(() {
             message = 'Welcome, ${response['firstName']}!';
           });
           Navigator.pushNamed(context, '/create'); // Navigate to the next screen
         }
-
       } else {
         // Failed login
         setState(() {
