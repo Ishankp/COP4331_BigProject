@@ -5,7 +5,7 @@ class EmailService {
   static const String templateId = 'template_xxz17ec';
   static const String publicKey = 'mfbP6q5wTnsFmAZvR';
 
-  static Future<String> sendEmail({
+  static Future<bool> sendEmail({
     required String userEmail,
     required String message,
   }) async {
@@ -24,9 +24,9 @@ class EmailService {
           privateKey: 'rF0X7uDNsJ-wfHhbcWrVD'
         ),
       );
-      return result.toString();
+      return true;
     } catch (error) {
-      return error.toString();
+      return false;
     }
   }
 }

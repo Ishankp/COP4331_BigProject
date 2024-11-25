@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mobile_app/screens/resetPassword.dart';
 // import 'package:flutter_app/screens/LoginScreen.dart';
 // import 'package:flutter_app/screens/CreateScreen.dart';
 
@@ -13,6 +14,7 @@ class Routes {
   static const String CREATESCREEN = '/create';
   static const String REGISTERSCREEN = '/register';
   static const String DASHBOARDSCREEN = '/dashboard';
+
 
   // routes of pages in the app
   static Map<String, Widget Function(BuildContext)> get getroutes => {

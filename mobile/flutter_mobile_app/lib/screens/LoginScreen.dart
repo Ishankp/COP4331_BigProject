@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_mobile_app/screens/ForgotPassword.dart';
 import 'package:flutter_mobile_app/screens/RegisterScreen.dart';
 import 'package:flutter_mobile_app/utils/getAPI.dart'; // Adjust import path if needed
+
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -168,6 +170,21 @@ class _LoginScreenState extends State<LoginScreen> {
                 onChanged: (text) {
                   password = text;
                 },
+              ),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ForgotPasswordPage()),
+                  );
+                },
+                child: const Text(
+                  'Forgot Password?',
+                  style: TextStyle(
+                    color: Colors.blue,
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
               ),
               const SizedBox(height: 10),
               if (message.isNotEmpty)

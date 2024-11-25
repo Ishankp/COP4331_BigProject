@@ -195,7 +195,7 @@ class ApiService {
     }
   }
 
-  // Login API
+  // verifyUser API
   Future<Map<String, dynamic>> verifyUser(String login, String password) async {
     final url = Uri.parse('$baseUrl/verify_user');
     try {
@@ -209,6 +209,46 @@ class ApiService {
         return jsonDecode(response.body);
       } else {
         throw Exception('Failed to verify: ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Error connecting to API: $e');
+    }
+  }
+
+  // Request Reset Password token
+  Future<Map<String, dynamic>> resetPasswordRequest(String email, String token) async {
+    final url = Uri.parse('$baseUrl/resetPasswordRequestMobile');
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"token": token, "email": email}),
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        throw Exception('Failed to request token: ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Error connecting to API: $e');
+    }
+  }
+
+  //Reset Password API
+  Future<Map<String, dynamic>> resetPassword(String newPassword, String token) async {
+    final url = Uri.parse('$baseUrl/resetPassword');
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"resetPasswordToken": token, "newPassword": newPassword}),
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        throw Exception('Failed to request token: ${response.body}');
       }
     } catch (e) {
       throw Exception('Error connecting to API: $e');
