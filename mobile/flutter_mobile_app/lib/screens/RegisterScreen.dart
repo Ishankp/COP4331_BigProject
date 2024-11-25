@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_mobile_app/utils/getAPI.dart'; // Adjust path as needed
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class RegisterScreen extends StatefulWidget {
   @override
@@ -7,36 +9,83 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final ApiService apiService = ApiService(); // Initialize the API service
+  final String registerUrl = 'http://wattareyoudoing.us:5000/api/register';
+
   String firstName = '';
   String lastName = '';
   String login = '';
   String password = '';
   String email = '';
-  String shareKey = ''; // Optional field
+  String shareKey = '';
   String message = '';
 
+  /// Validate all fields
+  bool _validateFields() {
+    if (firstName.trim().isEmpty ||
+        lastName.trim().isEmpty ||
+        login.trim().isEmpty ||
+        password.trim().isEmpty ||
+        email.trim().isEmpty ||
+        shareKey.trim().isEmpty) {
+      setState(() {
+        message = 'All fields are required.';
+      });
+      return false;
+    }
+    return true;
+  }
+
+  /// Save user data locally after successful registration
+  Future<void> _saveUserData(Map<String, dynamic> userData) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    await prefs.setString('firstName', userData['FirstName'] ?? '');
+    await prefs.setString('lastName', userData['LastName'] ?? '');
+    await prefs.setString('id', userData['id'].toString());
+    await prefs.setString('email', userData['email'] ?? '');
+    await prefs.setString('shareKey', userData['ShareKey'] ?? '');
+    await prefs.setBool('isVerified', userData['isVerified'] ?? false);
+    await prefs.setString('token', userData['token'] ?? '');
+  }
+
+  /// Register the user
   void _register() async {
+    if (!_validateFields()) return;
+
     try {
-      final response = await apiService.register(
-        firstName: firstName,
-        lastName: lastName,
-        login: login,
-        password: password,
-        email: email,
-        shareKey: shareKey.isEmpty ? null : shareKey, // Pass shareKey only if it's not empty
+      final response = await http.post(
+        Uri.parse(registerUrl),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "FirstName": firstName.trim(),
+          "LastName": lastName.trim(),
+          "Login": login.trim(),
+          "Password": password.trim(),
+          "email": email.trim(),
+          "ShareKey": shareKey.trim(),
+        }),
       );
 
-      if (response['id'] != null && response['id'] > 0) {
-        // Registration successful
-        setState(() {
-          message = 'Registration successful. Welcome, $firstName!';
-        });
-        Navigator.pop(context); // Navigate back to the login screen
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        if (data['success'] == true) {
+          await _saveUserData(data); // Save user data locally
+          setState(() {
+            message = 'Registration successful! Redirecting...';
+          });
+
+          // Redirect to login screen
+          await Future.delayed(Duration(seconds: 2));
+          Navigator.pushNamed(context, '/login');
+        } else {
+          setState(() {
+            message = data['error'] ?? 'Registration failed.';
+          });
+        }
       } else {
-        // Registration failed
         setState(() {
-          message = response['error'] ?? 'Registration failed.';
+          message = 'Failed to register. Error: ${response.body}';
         });
       }
     } catch (e) {
@@ -150,8 +199,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     filled: true,
                     fillColor: Colors.white,
                     border: OutlineInputBorder(),
-                    labelText: 'Share Key (optional)',
-                    hintText: 'Enter Share Key (if applicable)',
+                    labelText: 'Share Key',
+                    hintText: 'Enter Share Key',
                   ),
                   onChanged: (text) {
                     shareKey = text;
@@ -164,7 +213,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   Text(
                     message,
                     style: TextStyle(
-                      color: message.contains('success') ? Colors.green : Colors.red,
+                      color: message.contains('successful')
+                          ? Colors.green
+                          : Colors.red,
                       fontSize: 14,
                     ),
                   ),
@@ -173,7 +224,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 // Register Button
                 ElevatedButton(
                   onPressed: _register,
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.brown[50]),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.brown[50],
+                  ),
                   child: const Text(
                     'Register',
                     style: TextStyle(fontSize: 14, color: Colors.black),
