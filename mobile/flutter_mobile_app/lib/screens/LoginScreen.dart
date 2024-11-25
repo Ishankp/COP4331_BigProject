@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_mobile_app/screens/ForgotPassword.dart';
 import 'package:flutter_mobile_app/screens/RegisterScreen.dart';
 import 'package:flutter_mobile_app/utils/getAPI.dart'; // Adjust import path if needed
-
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -45,6 +45,19 @@ class _LoginScreenState extends State<LoginScreen> {
         message = 'Error: $e';
       });
     }
+  }
+
+  Future<void> _saveUserData(Map<String, dynamic> userData) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    // Save user data to SharedPreferences
+    await prefs.setString('firstName', userData['firstName'] ?? '');
+    await prefs.setString('lastName', userData['lastName'] ?? '');
+    await prefs.setString('id', userData['id'].toString());
+    await prefs.setBool('isVerified', userData['isVerified'] ?? false);
+    await prefs.setString('token', userData['token'] ?? '');
+    await prefs.setString('email', userData['email'] ?? '');
+    await prefs.setString('ShareKey', userData['ShareKey'] ?? '');
   }
 
   void _showVerificationDialog() {

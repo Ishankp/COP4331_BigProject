@@ -102,7 +102,14 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
                 // Change Password Button
                 ElevatedButton(
-                  onPressed: _resetPassword,
+                  onPressed: () {
+                    _resetPassword();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Password Changed!'),
+                      ),
+                    );
+                  },
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.brown[50]),
                   child: const Text(
                     'Change Password',
