@@ -34,7 +34,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
         password: password,
         email: email,
         token: token,
-        shareKey: shareKey.isEmpty ? null : shareKey, // Pass shareKey only if it's not empty
+        shareKey: shareKey.isEmpty
+            ? null
+            : shareKey, // Pass shareKey only if it's not empty
       );
 
       if (response['success'] != null) {
@@ -42,7 +44,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
         setState(() {
           message = 'Registration successful. Welcome, $firstName!';
         });
-        final emailSuccess = await EmailService.sendEmail(userEmail: email, message: token);
+        final emailSuccess =
+            await EmailService.sendEmail(userEmail: email, message: token);
         setState(() {
           message = emailSuccess.toString();
         });
@@ -243,8 +246,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     filled: true,
                     fillColor: Colors.white,
                     border: OutlineInputBorder(),
-                    labelText: 'Share Key (optional)',
-                    hintText: 'Enter Share Key (if applicable)',
+                    labelText: 'Share Key ',
+                    hintText: 'Create your Share Key',
                   ),
                   onChanged: (text) {
                     shareKey = text;
@@ -257,7 +260,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   Text(
                     message,
                     style: TextStyle(
-                      color: message.contains('success') ? Colors.green : Colors.red,
+                      color: message.contains('success')
+                          ? Colors.green
+                          : Colors.red,
                       fontSize: 14,
                     ),
                   ),
@@ -266,7 +271,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 // Register Button
                 ElevatedButton(
                   onPressed: _register,
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.brown[50]),
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.brown[50]),
                   child: const Text(
                     'Register',
                     style: TextStyle(fontSize: 14, color: Colors.black),
