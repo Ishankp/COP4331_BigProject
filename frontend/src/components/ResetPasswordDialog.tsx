@@ -34,7 +34,7 @@ const ResetPasswordDialog: React.FC<ResetPasswordDialogProps> = ({open, onClose}
     
         if (res.success) {
           const token = res.resetPasswordToken;
-          const resetLink = `http://localhost:5173/reset-password?token=${token}`;
+          const resetLink = `http://wattareyoudoing.us/reset-password?token=${token}`;
           await sendResetEmail(resetLink, email);
 
           setMessage("If the email you entered is associated with an account, you will receive an email to reset your password")
